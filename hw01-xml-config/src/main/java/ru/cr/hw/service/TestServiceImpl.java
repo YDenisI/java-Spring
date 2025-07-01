@@ -38,8 +38,7 @@ public class TestServiceImpl implements TestService {
                 ioService.printLine("Incorrect.");
             }
         }
-        ioService.printFormattedLine("Test finish! "+
-                "Answer correct: %d из %d.", correctAnswersCount, questions.size());
+        ioService.printFormattedLine("Test finish! Answer correct: %d из %d.", correctAnswersCount, questions.size());
     }
 
     private int readUserChoice(int numberOfAnswers) {
