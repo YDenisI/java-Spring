@@ -49,7 +49,13 @@ class TestServiceImplTest {
 
     @Test
     public void testAllCorrectAnswers() {
-        when(ioService.readString()).thenReturn("2").thenReturn("1");
+        when(ioService.readIntForRangeWithPrompt(
+                eq(1),
+                eq(2),
+                contains("Enter the answer number"),
+                contains("Incorrect input")))
+                .thenReturn(2)
+                .thenReturn(1);
         TestResult result = testService.executeTestFor(student);
         assertNotNull(result);
         assertEquals(student, result.getStudent());
