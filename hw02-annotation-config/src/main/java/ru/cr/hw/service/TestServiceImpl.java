@@ -32,7 +32,7 @@ public class TestServiceImpl implements TestService {
             for (int i = 0; i < answers.size(); i++) {
                 ioService.printFormattedLine("%d. %s", i + 1, answers.get(i).text());
             }
-            int userChoice = readUserChoice(answers.size());
+            int userChoice = ioService.readIntForRangeWithPrompt(1, answers.size(), "Enter the answer number:","Incorrect input. Try again.");
             Answer selectedAnswer = answers.get(userChoice - 1);
             if (selectedAnswer.isCorrect()) {
                 isAnswerValid = true;
@@ -40,24 +40,5 @@ public class TestServiceImpl implements TestService {
             testResult.applyAnswer(question, isAnswerValid);
         }
         return testResult;
-    }
-
-    private int readUserChoice(int numberOfAnswers) {
-        int choice = -1;
-        while (true) {
-            ioService.printLine("Enter the answer number:");
-            String input = ioService.readString();
-            try {
-                choice = Integer.parseInt(input);
-                if (choice >= 1 && choice <= numberOfAnswers) {
-                    break;
-                } else {
-                    ioService.printLine("Please enter a number from 1 to " + numberOfAnswers);
-                }
-            } catch (NumberFormatException e) {
-                ioService.printLine("Incorrect input. Try again.");
-            }
-        }
-        return choice;
     }
 }
