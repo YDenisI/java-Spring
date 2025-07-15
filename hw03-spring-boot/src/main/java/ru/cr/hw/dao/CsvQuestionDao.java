@@ -1,7 +1,6 @@
 package ru.cr.hw.dao;
 
 import com.opencsv.bean.CsvToBeanBuilder;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -22,6 +21,7 @@ import java.util.List;
 @Component
 public class CsvQuestionDao implements QuestionDao {
     private final TestFileNameProvider fileNameProvider;
+
     private final LocalizedMessagesService localizedMessagesService;
 
     @Autowired
@@ -30,18 +30,19 @@ public class CsvQuestionDao implements QuestionDao {
         this.fileNameProvider = fileNameProvider;
         this.localizedMessagesService = localizedMessagesService;
     }
+
     @Override
     public List<Question> findAll() {
         String fileName = fileNameProvider.getTestFileName();
 
         if (fileName == null) {
-            String message= localizedMessagesService.getMessage("TestService.error.file.null", "");
+            String message = localizedMessagesService.getMessage("TestService.error.file.null", "");
             throw new IllegalArgumentException(message);
         }
 
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(fileName)) {
             if (is == null) {
-                String message= localizedMessagesService.getMessage("TestService.error.file.not.found", fileName);
+                String message = localizedMessagesService.getMessage("TestService.error.file.not.found", fileName);
                 throw new QuestionReadException(message);
             }
 
