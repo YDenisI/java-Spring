@@ -17,6 +17,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+
 //@RequiredArgsConstructor
 @Component
 public class CsvQuestionDao implements QuestionDao {
@@ -42,7 +43,7 @@ public class CsvQuestionDao implements QuestionDao {
 
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(fileName)) {
             if (is == null) {
-                String message = localizedMessagesService.getMessage("TestService.error.file.not.found", fileName);
+                String message = localizedMessagesService.getMessage("TestService.error.file.not.found", "");
                 throw new QuestionReadException(message);
             }
 

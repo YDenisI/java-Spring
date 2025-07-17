@@ -1,6 +1,9 @@
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import ru.cr.hw.config.TestFileNameProvider;
 import ru.cr.hw.dao.CsvQuestionDao;
 import ru.cr.hw.domain.Answer;
@@ -11,15 +14,16 @@ import ru.cr.hw.service.LocalizedMessagesService;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class CsvQuestionDaoTest {
 
+    @Mock
     private LocalizedMessagesService localizedMessagesService;
 
-    @BeforeEach
-    void setUp() {
-        localizedMessagesService = Mockito.mock(LocalizedMessagesService.class);
-    }
     private static class TestFileNameProviderMock implements TestFileNameProvider {
         @Override
         public String getTestFileName() {
@@ -63,6 +67,10 @@ class CsvQuestionDaoTest {
 
     @Test
     public void findAll_ShouldThrowQuestionReadException_WhenFileNotFound() {
+
+        when(localizedMessagesService.getMessage(eq("TestService.error.file.not.found"), any()))
+                .thenReturn("File not found");
+
         CsvQuestionDao dao = new CsvQuestionDao(new MissingFileNameProvider(), localizedMessagesService);
 
         QuestionReadException thrown = assertThrows(
