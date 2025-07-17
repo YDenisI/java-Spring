@@ -8,9 +8,6 @@ spring:
   shell:
     interactive:
       enabled: true
-  logging:
-    level:
-      org.springframework.shell: DEBUG
 test:
   rightAnswersCountToPass: 3
   locale: ru-RU
