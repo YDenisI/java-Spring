@@ -1,0 +1,4 @@
+${AnsiColor.BRIGHT_RED}╦  ${AnsiColor.BRIGHT_BLUE}╔═╗${AnsiColor.BRIGHT_GREEN}╔═╗${AnsiColor.BRIGHT_MAGENTA}╔╦╗
+${AnsiColor.BRIGHT_RED}║  ${AnsiColor.BRIGHT_BLUE}║ ║${AnsiColor.BRIGHT_GREEN}╚═╗${AnsiColor.BRIGHT_MAGENTA} ║
+${AnsiColor.BRIGHT_RED}╩═╝${AnsiColor.BRIGHT_BLUE}╚═╝${AnsiColor.BRIGHT_GREEN}╚═╝${AnsiColor.BRIGHT_MAGENTA} ╩
+${AnsiColor.DEFAULT}
