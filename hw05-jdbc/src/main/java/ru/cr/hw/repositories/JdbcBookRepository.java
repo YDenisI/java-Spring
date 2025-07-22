@@ -34,7 +34,7 @@ public class JdbcBookRepository implements BookRepository {
             " from books b\n" +
             " left join authors a on b.author_id = a.id\n" +
             " left join genres g on b.genre_id = g.id\n" +
-            " where b.id = :id\n"+
+            " where b.id = :id\n" +
             " order by b.id";
 
     private static final String SQL_INSERT_BOOK = "insert into books(title, author_id, genre_id) " +
