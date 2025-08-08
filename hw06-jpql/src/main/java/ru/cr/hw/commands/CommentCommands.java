@@ -43,4 +43,21 @@ public class CommentCommands {
             return "Comments for Book with id %d not found".formatted(id);
         }
     }
+
+    @ShellMethod(value = "Insert comment", key = "cins")
+    public String insertComment(String comment, long bookId) {
+        var savedComment = commentService.insert(comment, bookId);
+        return commentConverter.commentToString(savedComment);
+    }
+
+    @ShellMethod(value = "Update commet", key = "cupd")
+    public String updateComment(long id, String comment, long bookId) {
+        var savedComment = commentService.update(id, comment, bookId);
+        return commentConverter.commentToString(savedComment);
+    }
+
+    @ShellMethod(value = "Delete comment by id", key = "cdel")
+    public void deleteComment(long id) {
+        commentService.deleteById(id);
+    }
 }

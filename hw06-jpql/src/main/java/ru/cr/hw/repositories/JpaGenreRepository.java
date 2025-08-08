@@ -1,9 +1,7 @@
 package ru.cr.hw.repositories;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 import ru.cr.hw.models.Genre;
 
@@ -31,15 +29,6 @@ public class JpaGenreRepository implements GenreRepository {
 
     @Override
     public Optional<Genre> findById(long id) {
-
-        TypedQuery<Genre> query = em.createQuery(
-                SQL_QUERY_GENRE_FIND_BY_ID
-                , Genre.class);
-        query.setParameter("id", id);
-        try {
-            return Optional.of(query.getSingleResult());
-        } catch (NoResultException e) {
-            return Optional.empty();
-        }
+        return Optional.ofNullable(em.find(Genre.class, id));
     }
 }

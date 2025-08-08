@@ -39,7 +39,7 @@ public class JpaBookRepository implements BookRepository {
     @Override
     public Optional<Book> findById(long id) {
 
-        TypedQuery<Book> query = em.createQuery(
+         TypedQuery<Book> query = em.createQuery(
                 SQL_SELECT_BOOK_FIND_BY_ID
                 , Book.class);
         query.setParameter("id", id);
@@ -69,16 +69,15 @@ public class JpaBookRepository implements BookRepository {
     @Override
     @Transactional
     public void deleteById(long id) {
-
-        em.createQuery(SQL_DELETE_BOOK)
-                .setParameter("id", id)
-                .executeUpdate();
+        Book book = em.find(Book.class, id);
+        if (book != null) {
+            em.remove(book);
+        }
     }
 
     @Transactional
     private Book insert(Book book) {
         em.persist(book);
-        em.flush();
         return book;
     }
 

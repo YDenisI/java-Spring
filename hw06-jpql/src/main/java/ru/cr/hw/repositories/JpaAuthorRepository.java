@@ -1,9 +1,7 @@
 package ru.cr.hw.repositories;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 import ru.cr.hw.models.Author;
 
@@ -32,14 +30,6 @@ public class JpaAuthorRepository implements AuthorRepository {
 
     @Override
     public Optional<Author> findById(long id) {
-        TypedQuery<Author> query = em.createQuery(
-                SQL_QUERY_AUTHOR_FIND_BY_ID
-                , Author.class);
-        query.setParameter("id", id);
-        try {
-            return Optional.of(query.getSingleResult());
-        } catch (NoResultException e) {
-            return Optional.empty();
-        }
+        return Optional.ofNullable(em.find(Author.class, id));
     }
 }
