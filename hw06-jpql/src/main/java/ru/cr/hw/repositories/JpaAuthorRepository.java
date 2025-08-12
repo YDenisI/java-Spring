@@ -8,13 +8,8 @@ import ru.cr.hw.models.Author;
 import java.util.List;
 import java.util.Optional;
 
-
 @Repository
 public class JpaAuthorRepository implements AuthorRepository {
-
-    private static final String SQL_QUERY_AUTHOR_FIND_ALL = "select a from Author a";
-
-    private static final String SQL_QUERY_AUTHOR_FIND_BY_ID = "select a from Author a where a.id = :id";
 
     @PersistenceContext
     private final EntityManager em;
@@ -25,7 +20,7 @@ public class JpaAuthorRepository implements AuthorRepository {
 
     @Override
     public List<Author> findAll() {
-        return em.createQuery(SQL_QUERY_AUTHOR_FIND_ALL, Author.class).getResultList();
+        return em.createQuery("select a from Author a", Author.class).getResultList();
     }
 
     @Override

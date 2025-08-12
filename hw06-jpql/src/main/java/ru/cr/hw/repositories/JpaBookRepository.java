@@ -18,17 +18,6 @@ import java.util.Optional;
 @Repository
 public class JpaBookRepository implements BookRepository {
 
-    private static final String SQL_SELECT_BOOK_FIND_ALL = "select b from Book b " +
-                                                           "join fetch b.author " +
-                                                           "join fetch b.genre order by b.id";
-
-    private static final String SQL_SELECT_BOOK_FIND_BY_ID = "select b from Book b " +
-                                                             "join fetch b.author " +
-                                                             "join fetch b.genre where b.id = :id";
-
-    private static final String SQL_DELETE_BOOK = "delete from Book b where b.id = :id";
-
-
     @PersistenceContext
     private final EntityManager em;
 
@@ -39,9 +28,9 @@ public class JpaBookRepository implements BookRepository {
     @Override
     public Optional<Book> findById(long id) {
 
-         TypedQuery<Book> query = em.createQuery(
-                SQL_SELECT_BOOK_FIND_BY_ID
-                , Book.class);
+        TypedQuery<Book> query = em.createQuery(
+                "SELECT c FROM Book c WHERE c.id = :id", Book.class);
+        query.setHint("javax.persistence.fetchgraph", em.getEntityGraph("book-entity-graph"));
         query.setParameter("id", id);
         try {
             return Optional.of(query.getSingleResult());
@@ -52,8 +41,10 @@ public class JpaBookRepository implements BookRepository {
 
     @Override
     public List<Book> findAll() {
-        return em.createQuery(SQL_SELECT_BOOK_FIND_ALL, Book.class)
-                .getResultList();
+        TypedQuery<Book> query = em.createQuery(
+                "SELECT c FROM Book c", Book.class);
+        query.setHint("javax.persistence.fetchgraph", em.getEntityGraph("book-entity-graph"));
+        return query.getResultList();
 
     }
 

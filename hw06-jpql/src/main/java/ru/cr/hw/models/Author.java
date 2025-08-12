@@ -8,11 +8,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Table;
 import jakarta.persistence.GenerationType;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -24,4 +21,28 @@ public class Author {
 
     @Column(name = "full_name")
     private String fullName;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    @Override
+    public String toString() {
+        return "Author{" +
+                "id=" + id +
+                ", fullName='" + fullName + '\'' +
+                '}';
+    }
 }

@@ -19,18 +19,6 @@ import java.util.Optional;
 @Repository
 public class JpaCommentRepository implements CommentRepository {
 
-    private static final String SQL_QUERY_COMMENT_BOOK = "select c from Comment c " +
-            "join fetch c.book b " +
-            "join fetch b.author " +
-            "join fetch b.genre " +
-            "where b.id = :id";
-
-    private static final String SQL_QUERY_COMMENT_FIND_BY_ID = "select c from Comment c " +
-            "join fetch c.book b " +
-            "join fetch b.author " +
-            "join fetch b.genre " +
-            "where c.id = :id";
-
     @PersistenceContext
     private final EntityManager em;
 
@@ -40,18 +28,19 @@ public class JpaCommentRepository implements CommentRepository {
 
     @Override
     public List<Comment>  findByBookId(long bookId) {
-        return em.createQuery(
-                        SQL_QUERY_COMMENT_BOOK, Comment.class)
-                .setParameter("id", bookId)
-                .getResultList();
+        TypedQuery<Comment> query = em.createQuery(
+                "SELECT c FROM Comment c WHERE c.book.id = :bookId", Comment.class);
+        query.setHint("javax.persistence.fetchgraph", em.getEntityGraph("comments-book-entity-graph"));
+        query.setParameter("bookId", bookId);
+        return query.getResultList();
     }
 
     @Override
     @Transactional
     public Optional<Comment> findById(long id) {
         TypedQuery<Comment> query = em.createQuery(
-                SQL_QUERY_COMMENT_FIND_BY_ID
-                , Comment.class);
+                "SELECT c FROM Comment c WHERE c.id = :id", Comment.class);
+        query.setHint("javax.persistence.fetchgraph", em.getEntityGraph("comments-book-entity-graph"));
         query.setParameter("id", id);
         try {
             return Optional.of(query.getSingleResult());

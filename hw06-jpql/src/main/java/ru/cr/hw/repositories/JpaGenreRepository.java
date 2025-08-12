@@ -11,10 +11,6 @@ import java.util.Optional;
 @Repository
 public class JpaGenreRepository implements GenreRepository {
 
-    private static final String SQL_QUERY_GENRE_FIND_ALL = "select g from Genre g";
-
-    private static final String SQL_QUERY_GENRE_FIND_BY_ID = "select g from Genre g where g.id = :id";
-
     @PersistenceContext
     private final EntityManager em;
 
@@ -24,7 +20,7 @@ public class JpaGenreRepository implements GenreRepository {
 
     @Override
     public List<Genre> findAll() {
-        return em.createQuery(SQL_QUERY_GENRE_FIND_ALL, Genre.class).getResultList();
+        return em.createQuery("select g from Genre g", Genre.class).getResultList();
     }
 
     @Override

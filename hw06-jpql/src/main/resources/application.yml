@@ -16,6 +16,7 @@ spring:
     generate-ddl: false
     hibernate:
       ddl-auto: none
+      default_batch_fetch_size: 10
 
     show-sql: true
     properties:
