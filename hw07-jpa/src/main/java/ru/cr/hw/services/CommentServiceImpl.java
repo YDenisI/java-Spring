@@ -32,24 +32,23 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Comment insert(String comment, long bookId) {
-        return save(0, comment, bookId);
+        var existBook = bookRepository.findById(bookId)
+                .orElseThrow(() -> new EntityNotFoundException("Book with id %d not found".formatted(bookId)));
+        var newComment = new Comment(comment, existBook);
+        return commentRepository.save(newComment);
     }
 
     @Override
     @Transactional
-    public Comment update(long id, String comment, long bookId) {
-        return save(id, comment, bookId);
+    public Comment update(long id, String comment) {
+        var existComment = commentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Comment with id %d not found".formatted(id)));
+        existComment.setComment(comment);
+        return commentRepository.save(existComment);
     }
 
     @Override
     public void deleteById(long id) {
         commentRepository.deleteById(id);
-    }
-
-    private Comment save(long id, String comment, long bookId) {
-        var book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new EntityNotFoundException("Book with id %d not found".formatted(bookId)));
-        var comm = new Comment(id, comment, book);
-        return commentRepository.save(comm);
     }
 }

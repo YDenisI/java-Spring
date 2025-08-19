@@ -1,7 +1,7 @@
 package ru.cr.hw.repositories;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.cr.hw.models.Book;
 
@@ -10,9 +10,9 @@ import java.util.Optional;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
 
-    @Query("select b from Book b join fetch b.author join fetch b.genre order by b.id")
+    @EntityGraph(value = "book-entity-graph")
     List<Book> findAll();
 
-    @Query("select b from Book b join fetch b.author join fetch b.genre where b.id = :id")
+    @EntityGraph(value = "book-entity-graph")
     Optional<Book> findById(@Param("id") Long id);
 }
