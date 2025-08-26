@@ -25,7 +25,8 @@ import java.util.List;
         name = "book-entity-graph",
         attributeNodes = {
                 @NamedAttributeNode(value = "author"),
-                @NamedAttributeNode(value = "genre")
+                @NamedAttributeNode(value = "genre"),
+                @NamedAttributeNode(value = "comments")
         }
 )
 public class Book {
@@ -45,8 +46,8 @@ public class Book {
     private Genre genre;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Comment> comments = new ArrayList<>();
-
+    private List<Comment> comments;
+/*
     public Book(long id, String title, Author author, Genre genre) {
         this.id = id;
         this.title = title;
@@ -54,12 +55,19 @@ public class Book {
         this.genre = genre;
         this.comments = new ArrayList<>();
     }
-
+*/
     public Book(String title, Author author, Genre genre) {
         this.title = title;
         this.author = author;
         this.genre = genre;
         this.comments = new ArrayList<>();
+    }
+
+    public Book(String title, Author author, Genre genre, List<Comment> comments) {
+        this.title = title;
+        this.author = author;
+        this.genre = genre;
+        this.comments = comments;
     }
 
     public long getId() {

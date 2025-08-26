@@ -43,7 +43,7 @@ class JpaCommentAndBookRepositoryTest {
         Comment newComment = new Comment();
         newComment.setComment("Новый комментарий");
 
-        var expectedBook = new Book(1L, "BookTitle_1", new Author(1L, AUTHOR_NAME_1), new Genre(1L, GENRE_NAME_1));
+        var expectedBook = new Book("BookTitle_1", new Author(1L, AUTHOR_NAME_1), new Genre(1L, GENRE_NAME_1));
         newComment.setBook(expectedBook);
 
         Comment savedComment = commentRepository.save(newComment);

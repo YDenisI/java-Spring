@@ -11,11 +11,22 @@ public class BookConverter {
 
     private final GenreConverter genreConverter;
 
+    private final CommentConverter commentsConverter;
+
     public String bookToString(Book book) {
-        return "Id: %d, title: %s, author: {%s}, genres: [%s]".formatted(
+
+        String commentsStr = book.getComments() != null && !book.getComments().isEmpty()
+                ? book.getComments().stream()
+                .map(commentsConverter::commentToString)
+                .reduce((a, b) -> a + "\n" + b)
+                .orElse("")
+                : "Нет комментариев";
+
+        return "Id: %d, title: %s, author: {%s}, genres: [%s], comments[%s]".formatted(
                 book.getId(),
                 book.getTitle(),
                 authorConverter.authorToString(book.getAuthor()),
-                genreConverter.genreToString(book.getGenre()));
+                genreConverter.genreToString(book.getGenre()),
+                commentsStr);
     }
 }

@@ -10,10 +10,6 @@ import java.util.Optional;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    @Override
-    @Query("select c from Comment c join fetch c.book b join fetch b.author join fetch b.genre where c.id = :id")
-    Optional<Comment> findById(@Param("id") Long id);
-
-    @Query("select c from Comment c join fetch c.book b join fetch b.author join fetch b.genre where b.id = :bookId")
+    @Query("select c from Comment c where c.book.id = :bookId")
     List<Comment> findByBookId(@Param("bookId") Long bookId);
 }

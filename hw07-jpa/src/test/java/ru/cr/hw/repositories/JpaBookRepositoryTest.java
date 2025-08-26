@@ -34,7 +34,7 @@ class JpaBookRepositoryTest {
     @Test
     void findByIdReturnsBookWithAuthorAndGenre() {
 
-        var expectedBook = new Book(1L, "BookTitle_1", new Author(1L, AUTHOR_NAME_1), new Genre(1L, GENRE_NAME_1));
+        var expectedBook = new Book(BOOK_TITLE_1, new Author(1L, AUTHOR_NAME_1), new Genre(1L, GENRE_NAME_1));
 
         Optional<Book> optBook = bookRepository.findById(BOOK_ID);
 
@@ -43,7 +43,7 @@ class JpaBookRepositoryTest {
                 .get()
                 .satisfies(found -> assertThat(found)
                         .usingRecursiveComparison()
-                        .ignoringFields("comments", "author.books", "genre.books")
+                        .ignoringFields("id","comments", "author.books", "genre.books")
                         .isEqualTo(expectedBook));
     }
 

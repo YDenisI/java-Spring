@@ -20,12 +20,12 @@ public class CommentServiceImpl implements CommentService {
     private final BookRepository bookRepository;
 
     @Override
-    public Optional<Comment> findById(long id) {
+    public Optional<Comment> findById(Long id) {
         return commentRepository.findById(id);
     }
 
     @Override
-    public List<Comment>  findByBookId(long bookId) {
+    public List<Comment>  findByBookId(Long bookId) {
         return commentRepository.findByBookId(bookId);
     }
 

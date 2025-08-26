@@ -8,10 +8,8 @@ import ru.cr.hw.models.Comment;
 @Component
 public class CommentConverter {
 
-    private final BookConverter bookConverter;
-
     public String commentToString(Comment comment) {
-        return "Book: {%s}, Id: %d, Comment: %s".formatted(bookConverter.bookToString(comment.getBook()),
+        return "Id: %d, Comment: %s".formatted(
                 comment.getId(),
                 comment.getComment());
     }
