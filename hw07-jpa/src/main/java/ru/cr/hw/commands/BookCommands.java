@@ -50,4 +50,14 @@ public class BookCommands {
     public void deleteBook(long id) {
         bookService.deleteById(id);
     }
+
+    // bdel 4
+    @ShellMethod(value = "Delete book by id", key = "fba")
+    public String findBookbyAuthor(long id) {
+        return bookService.findByAuthor(id).stream()
+                .map(bookConverter::bookToString)
+                .collect(Collectors.joining("," + System.lineSeparator()));
+
+    }
+
 }

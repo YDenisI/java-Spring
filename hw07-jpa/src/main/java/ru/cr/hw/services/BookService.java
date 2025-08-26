@@ -1,5 +1,6 @@
 package ru.cr.hw.services;
 
+import ru.cr.hw.models.Author;
 import ru.cr.hw.models.Book;
 
 import java.util.List;
@@ -15,4 +16,6 @@ public interface BookService {
     Book update(long id, String title, long authorId, long genreId);
 
     void deleteById(long id);
+
+    List<Book> findByAuthor(Long id);
 }

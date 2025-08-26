@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.cr.hw.exceptions.EntityNotFoundException;
+import ru.cr.hw.models.Author;
 import ru.cr.hw.models.Book;
 import ru.cr.hw.repositories.AuthorRepository;
 import ru.cr.hw.repositories.BookRepository;
@@ -29,6 +30,13 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<Book> findAll() {
         return bookRepository.findAll();
+    }
+
+    @Override
+    public List<Book> findByAuthor(Long id) {
+        Author author = authorRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Author with id %d not found".formatted(id)));
+        return bookRepository.findByAuthor(author);
     }
 
     @Override
