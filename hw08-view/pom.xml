@@ -3,23 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>ru.gpncr</groupId>
+        <artifactId>Spring_course</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
 
-    <groupId>ru.gpncr</groupId>
-    <artifactId>Spring_course</artifactId>
-    <version>1.0-SNAPSHOT</version>
-
-    <packaging>pom</packaging>
-
-    <modules>
-        <module>hw01-xml-config</module>
-        <module>hw02-annotation-config</module>
-        <module>hw03-spring-boot</module>
-        <module>hw04-spring-shell</module>
-        <module>hw05-jdbc</module>
-        <module>hw06-jpql</module>
-        <module>hw07-jpa</module>
-        <module>hw08-view</module>
-    </modules>
+    <artifactId>hw08-view</artifactId>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
