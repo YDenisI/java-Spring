@@ -52,7 +52,7 @@ public class BookCommands {
     }
 
     // bdel 4
-    @ShellMethod(value = "Delete book by id", key = "fba")
+    @ShellMethod(value = "Find book by author", key = "fba")
     public String findBookbyAuthor(long id) {
         return bookService.findByAuthor(id).stream()
                 .map(bookConverter::bookToString)
