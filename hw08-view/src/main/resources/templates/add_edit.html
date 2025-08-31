@@ -64,7 +64,7 @@
 <body>
 
 <!-- book edition -->
-<form id="edit-form" action="add_edit.html" th:action="${book.id != null} ? @{/edit(id=${book.id})}" th:method="post" th:object="${book}">
+<form id="edit-form" action="add_edit.html" th:action="${book.id != null  and book.id > 0} ? @{/edit(id=${book.id})} : @{/create}" th:method="post" th:object="${book}">
     <div class="row">
         <h3 th:if="${book.id != null and book.id > 0}" th:text="#{book-form-header}">Book Info</h3>
         <h3 th:unless="${book?.id > 0}" th:text="#{add-book-button-caption}">Add Book</h3>
@@ -84,11 +84,11 @@
 
     <div class="row">
         <label for="author-select" th:text="#{book-field-author} + ':'">Author:</label>
-        <select id="author-select" name="author.id">
+        <select id="author-select" th:field="*{authorId}">
             <option th:each="author : ${allAuthors}"
                     th:value="${author.id}"
                     th:text="${author.fullName}"
-                    th:selected="${author.id} == ${book.author.id}">
+                    th:selected="${author.id} == ${book.authorId}">
                 Автор
             </option>
         </select>
@@ -96,11 +96,11 @@
 
     <div class="row">
         <label for="genre-select" th:text="#{book-field-genre} + ':'">Genre:</label>
-        <select id="genre-select" name="genre.id">
+        <select id="genre-select" th:field="*{genreId}">
             <option th:each="genre : ${allGenres}"
                     th:value="${genre.id}"
                     th:text="${genre.name}"
-                    th:selected="${genre.id} == ${book.genre.id}">
+                    th:selected="${genre.id} == ${book.genreId}">
                 Жанр
             </option>
         </select>

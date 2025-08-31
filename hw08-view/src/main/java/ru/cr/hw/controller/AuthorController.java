@@ -8,7 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.cr.hw.domain.Author;
-import ru.cr.hw.repostory.AuthorRepository;
+import ru.cr.hw.services.AuthorService;
 
 
 import java.util.List;
@@ -18,11 +18,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthorController {
 
-    private final AuthorRepository authorRepository;
+    private final AuthorService authorService;
 
     @GetMapping("/author")
     public String listPage(@RequestParam(value = "from", required = false) String from, Model model) {
-        List<Author> authors = authorRepository.findAll();
+        List<Author> authors = authorService.findAll();
         model.addAttribute("authors", authors);
         model.addAttribute("fromBooks", "books".equals(from));
         return "list_authors";

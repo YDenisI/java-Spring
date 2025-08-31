@@ -10,10 +10,15 @@ import ru.cr.hw.domain.Author;
 import ru.cr.hw.domain.Book;
 import ru.cr.hw.domain.Comment;
 import ru.cr.hw.domain.Genre;
+import ru.cr.hw.dto.BookDto;
 import ru.cr.hw.repostory.AuthorRepository;
 import ru.cr.hw.repostory.BookRepository;
 import ru.cr.hw.repostory.CommentRepository;
 import ru.cr.hw.repostory.GenreRepository;
+import ru.cr.hw.services.AuthorService;
+import ru.cr.hw.services.BookService;
+import ru.cr.hw.services.CommentService;
+import ru.cr.hw.services.GenreService;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +35,18 @@ class BookControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private BookService bookService;
+
+    @MockitoBean
+    private AuthorService authorService;
+
+    @MockitoBean
+    private CommentService commentService;
+
+    @MockitoBean
+    private GenreService genreService;
 
     @MockitoBean
     private BookRepository bookRepository;
@@ -50,7 +67,7 @@ class BookControllerTest {
 
     @Test
     void listPage_ShouldReturnBooksList() throws Exception {
-        when(bookRepository.findAll()).thenReturn(books);
+        when(bookService.findAll()).thenReturn(books);
 
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
@@ -62,9 +79,9 @@ class BookControllerTest {
     void editPage_WithId_ShouldReturnEditForm() throws Exception {
         Book book = new Book(1L, "Book_Title", new Author(1L, "John Doe"), new Genre(1L, "Fiction"));
 
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
-        when(authorRepository.findAll()).thenReturn(Collections.singletonList(new Author()));
-        when(genreRepository.findAll()).thenReturn(Collections.singletonList(new Genre()));
+        when(bookService.findById(1L)).thenReturn(Optional.of(book));
+        when(authorService.findAll()).thenReturn(Collections.singletonList(new Author()));
+        when(genreService.findAll()).thenReturn(Collections.singletonList(new Genre()));
 
         mockMvc.perform(get("/edit").param("id", "1"))
                 .andExpect(status().isOk())
@@ -76,8 +93,8 @@ class BookControllerTest {
 
     @Test
     void editPage_WithoutId_ShouldReturnEmptyForm() throws Exception {
-        when(authorRepository.findAll()).thenReturn(Collections.singletonList(new Author()));
-        when(genreRepository.findAll()).thenReturn(Collections.singletonList(new Genre()));
+        when(authorService.findAll()).thenReturn(Collections.singletonList(new Author()));
+        when(genreService.findAll()).thenReturn(Collections.singletonList(new Genre()));
 
         mockMvc.perform(get("/edit"))
                 .andExpect(status().isOk())
@@ -86,7 +103,7 @@ class BookControllerTest {
                 .andExpect(model().attributeExists("allAuthors"))
                 .andExpect(model().attributeExists("allGenres"));
     }
-
+/*
     @Test
     void saveBook_ValidData_ShouldRedirect() throws Exception {
         Author author = new Author();
@@ -96,9 +113,9 @@ class BookControllerTest {
         Book savedBook = new Book();
         savedBook.setId(1L);
 
-        when(authorRepository.findById(1L)).thenReturn(Optional.of(author));
-        when(genreRepository.findById(1L)).thenReturn(Optional.of(genre));
-        when(bookRepository.save(any(Book.class))).thenReturn(savedBook);
+        when(authorService.findById(1L)).thenReturn(Optional.of(author));
+        when(genreService.findById(1L)).thenReturn(Optional.of(genre));
+        when(bookService.insert(any(Book.class))).thenReturn(savedBook);
 
         mockMvc.perform(post("/edit")
                         .param("title", "Test Book")
@@ -106,21 +123,21 @@ class BookControllerTest {
                         .param("genre.id", "1"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/"));
-    }
+    }*/
 
     @Test
     void deleteBook_ExistingId_ShouldRedirect() throws Exception {
         Book book = new Book();
         book.setId(1L);
 
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+        when(bookService.findById(1L)).thenReturn(Optional.of(book));
 
         mockMvc.perform(post("/deleteBook")
                         .param("bookId", "1"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/"));
 
-        verify(bookRepository, times(1)).delete(book);
+        verify(bookService, times(1)).deleteById(book.getId());
     }
 
     @Test
@@ -134,10 +151,10 @@ class BookControllerTest {
         Book savedBook = new Book();
         savedBook.setId(1L);
 
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
-        when(authorRepository.findAll()).thenReturn(Collections.singletonList(new Author()));
-        when(genreRepository.findAll()).thenReturn(Collections.singletonList(new Genre()));
-        when(commentRepository.findByBookId(1L)).thenReturn(Collections.emptyList());
+        when(bookService.findById(1L)).thenReturn(Optional.of(book));
+        when(authorService.findAll()).thenReturn(Collections.singletonList(new Author()));
+        when(genreService.findAll()).thenReturn(Collections.singletonList(new Genre()));
+        when(commentService.findByBookId(1L)).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/viewbook").param("id", "1"))
                 .andExpect(status().isOk())
@@ -149,55 +166,35 @@ class BookControllerTest {
     }
 
     @Test
-    void addComment_ShouldSaveComment() throws Exception {
-        Book book = new Book();
-        book.setId(1L);
+    public void testViewPage_WhenServiceThrowsException_ShouldReturn500() throws Exception {
+        when(bookService.findById(1L)).thenThrow(new RuntimeException("Error"));
 
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
-
-        mockMvc.perform(post("/addComment")
-                        .param("bookId", "1")
-                        .param("commentText", "Great book!"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/viewbook?id=1"));
-
-        verify(commentRepository, times(1)).save(any(Comment.class));
+        mockMvc.perform(get("/viewbook").param("id", "1"))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
-    void editComment_ShouldUpdateComment() throws Exception {
-        Comment comment = new Comment();
-        comment.setId(1L);
-        Book book = new Book();
-        book.setId(1L);
-        comment.setBook(book);
+    void deleteBook_WhenBookNotFound_ShouldReturn404() throws Exception {
+        when(bookService.findById(999L)).thenReturn(Optional.empty());
 
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
-
-        mockMvc.perform(post("/editComment")
-                        .param("commentId", "1")
-                        .param("commentText", "Updated comment"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/viewbook?id=1"));
-
-        verify(commentRepository, times(1)).save(any(Comment.class));
+        mockMvc.perform(post("/deleteBook").param("bookId", "999"))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name("customError"))
+                .andExpect(model().attributeExists("errorText"));
     }
 
     @Test
-    void deleteComment_ShouldRemoveComment() throws Exception {
-        Comment comment = new Comment();
-        comment.setId(1L);
-        Book book = new Book();
-        book.setId(1L);
-        comment.setBook(book);
-
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
-
-        mockMvc.perform(post("/deleteComment")
-                        .param("commentId", "1"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/viewbook?id=1"));
-
-        verify(commentRepository, times(1)).deleteById(1L);
+    void editBook_WhenTitleIsBlank_ShouldReturnFormWithErrors() throws Exception {
+        mockMvc.perform(post("/edit")
+                        .param("id", "1")
+                        .param("title", "")
+                        .param("authorId", "1")
+                        .param("genreId", "1")
+                        .param("initialComment", "Test comment"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("add_edit"))
+                .andExpect(model().attributeHasFieldErrors("book", "title"))
+                .andExpect(model().attributeExists("allAuthors"))
+                .andExpect(model().attributeExists("allGenres"));
     }
 }

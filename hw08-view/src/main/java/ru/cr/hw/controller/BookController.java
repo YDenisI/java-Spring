@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,11 +16,11 @@ import ru.cr.hw.domain.Author;
 import ru.cr.hw.domain.Book;
 import ru.cr.hw.domain.Genre;
 import ru.cr.hw.domain.Comment;
-import ru.cr.hw.repostory.AuthorRepository;
-import ru.cr.hw.repostory.BookRepository;
-import ru.cr.hw.repostory.CommentRepository;
-import ru.cr.hw.repostory.GenreRepository;
-
+import ru.cr.hw.dto.BookDto;
+import ru.cr.hw.services.AuthorService;
+import ru.cr.hw.services.BookService;
+import ru.cr.hw.services.CommentService;
+import ru.cr.hw.services.GenreService;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,82 +30,108 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BookController {
 
-    private final BookRepository bookRepository;
+    private final BookService bookService;
 
-    private final AuthorRepository authorRepository;
+    private final AuthorService authorService;
 
-    private final GenreRepository genreRepository;
+    private final GenreService genreService;
 
-    private final CommentRepository commentRepository;
+    private final CommentService commentService;
 
     @GetMapping("/")
     public String listPage(Model model) {
-        List<Book> books = bookRepository.findAll();
+        List<Book> books = bookService.findAll();
         model.addAttribute("books", books);
         return "list_books";
     }
 
     @GetMapping("/edit")
     public String editPage(@RequestParam(value = "id", required = false) Long id, Model model) {
-        List<Author> allAuthors = authorRepository.findAll();
-        List<Genre> allGenres = genreRepository.findAll();
-
-           model.addAttribute("allAuthors", allAuthors);
+        List<Author> allAuthors = authorService.findAll();
+        List<Genre> allGenres = genreService.findAll();
+        model.addAttribute("allAuthors", allAuthors);
         model.addAttribute("allGenres", allGenres);
 
-        Book book;
+        BookDto bookDto;
         if (id != null) {
-            book = bookRepository.findById(id).orElse(new Book());
+            Optional<Book> bookOpt = bookService.findById(id);
+            if (bookOpt.isEmpty()) {
+                throw new NotFoundException();
+            }
+            bookDto = BookDto.fromDomain(bookOpt.get());
         } else {
-
-            book = new Book();
+            bookDto = new BookDto();
             if (!allAuthors.isEmpty()) {
-                book.setAuthor(allAuthors.get(0));
+                bookDto.setAuthorId(allAuthors.get(0).getId());
             }
             if (!allGenres.isEmpty()) {
-                book.setGenre(allGenres.get(0));
+                bookDto.setGenreId(allGenres.get(0).getId());
             }
         }
-        model.addAttribute("book", book);
+        model.addAttribute("book", bookDto);
         return "add_edit";
     }
 
     @PostMapping("/edit")
-    public String saveBook(@Valid @ModelAttribute("book") Book book,
-                             @RequestParam("author.id") Long authorId,
-                             @RequestParam("genre.id") Long genreId,
+    public String editBook(@Valid @ModelAttribute("book") BookDto bookDto,
+                           BindingResult bindingResult,
+                            // @RequestParam("author.id") Long authorId,
+                            // @RequestParam("genre.id") Long genreId,
                              @RequestParam(value = "initialComment", required = false) String initialComment,
                              Model model) {
 
-        Optional<Author> authorOpt = authorRepository.findById(authorId);
-        Optional<Genre> genreOpt = genreRepository.findById(genreId);
-        Book savedBook;
-        if (book.getId() == 0) {
-            book.setAuthor(authorOpt.get());
-            book.setGenre(genreOpt.get());
-            savedBook = bookRepository.save(book);
+        if (bindingResult.hasErrors()) {
+            List<Author> allAuthors = authorService.findAll();
+            List<Genre> allGenres = genreService.findAll();
+            model.addAttribute("allAuthors", allAuthors);
+            model.addAttribute("allGenres", allGenres);
+            return "add_edit";
+        }
+
+        Author author = authorService.findById(bookDto.getAuthorId()).orElseThrow(() -> new NotFoundException());
+        Genre genre = genreService.findById(bookDto.getGenreId()).orElseThrow(() -> new NotFoundException());
+
+        bookService.update(bookDto.getId(), bookDto.getTitle(), author.getId(), genre.getId());
+
+   /*     Optional<Author> authorOpt = authorService.findById(authorId);
+        Optional<Genre> genreOpt = genreService.findById(genreId);
+        Book existingBook = bookService.findById(book.getId()).orElseThrow();
+        existingBook.setTitle(book.getTitle());
+        existingBook.setAuthor(authorOpt.get());
+        existingBook.setGenre(genreOpt.get());
+        bookService.update(book.getId(),book.getTitle(), authorOpt.get().getId(), genreOpt.get().getId());
+*/
+        return "redirect:/";
+    }
+
+    @PostMapping("/create")
+    public String createBook(@Valid @ModelAttribute("book") BookDto bookDto,
+                           @RequestParam("authorId") Long authorId,
+                           @RequestParam("genreId") Long genreId,
+                           @RequestParam(value = "initialComment", required = false) String initialComment,
+                           Model model) {
+
+        Optional<Author> authorOpt = authorService.findById(authorId);
+        Optional<Genre> genreOpt = genreService.findById(genreId);
+        Book book =  bookDto.toDomain(authorOpt.get(), genreOpt.get());
+        Book savedBook = bookService.insert(book.getTitle(), book.getAuthor().getId(), book.getGenre().getId());
             if (initialComment != null && !initialComment.trim().isEmpty()) {
                 Comment comment = new Comment();
                 comment.setComment(initialComment.trim());
                 comment.setBook(savedBook);
-                commentRepository.save(comment);
+                commentService.insert(initialComment.trim(), savedBook.getId());
             }
-        } else {
-            Book existingBook = bookRepository.findById(book.getId()).orElseThrow();
-            existingBook.setTitle(book.getTitle());
-            existingBook.setAuthor(authorOpt.get());
-            existingBook.setGenre(genreOpt.get());
-            bookRepository.save(existingBook);
-        }
         return "redirect:/";
     }
 
     @PostMapping("/deleteBook")
     public String deleteBook(@RequestParam("bookId") Long id, RedirectAttributes redirectAttributes) {
-        System.out.println("BINGO");
-        Optional<Book> bookOpt = bookRepository.findById(id);
+        Optional<Book> bookOpt = bookService.findById(id);
+        if (bookOpt.isEmpty()) {
+            throw new NotFoundException();
+        }
         if (bookOpt.isPresent()) {
-            bookRepository.delete(bookOpt.get());
+            bookService.deleteById(bookOpt.get().getId());
             redirectAttributes.addFlashAttribute("message", "Book deleted successfully!");
         } else {
             redirectAttributes.addFlashAttribute("error", "Book not found!");
@@ -117,10 +144,13 @@ public class BookController {
                            @RequestParam(value = "editCommentId", required = false) Long editCommentId,
                            Model model) {
 
-        Optional<Book> book = bookRepository.findById(id);
-        List<Author> allAuthors = authorRepository.findAll();
-        List<Genre> allGenres = genreRepository.findAll();
-        List<Comment> comments = commentRepository.findByBookId(book.get().getId());
+        Optional<Book> book = bookService.findById(id);
+        if (book.isEmpty()) {
+            throw new NotFoundException();
+        }
+        List<Author> allAuthors = authorService.findAll();
+        List<Genre> allGenres = genreService.findAll();
+        List<Comment> comments = commentService.findByBookId(book.get().getId());
         model.addAttribute("book", book.get());
         model.addAttribute("allAuthors", allAuthors);
         model.addAttribute("allGenres", allGenres);
@@ -131,51 +161,5 @@ public class BookController {
         }
 
         return "view_comments";
-    }
-
-    @PostMapping("/addComment")
-    public String addComment(@RequestParam("bookId") Long bookId,
-                             @RequestParam("commentText") String commentText,
-                             RedirectAttributes redirectAttributes) {
-
-        Optional<Book> book = bookRepository.findById(bookId);
-        if (book.isPresent()) {
-            Comment comment = new Comment();
-            comment.setComment(commentText);
-            comment.setBook(book.get());
-            commentRepository.save(comment);
-        }
-
-        redirectAttributes.addAttribute("id", bookId);
-        return "redirect:/viewbook";
-    }
-
-    @PostMapping("/editComment")
-    public String editComment(@RequestParam("commentId") Long commentId,
-                              @RequestParam("commentText") String commentText,
-                              RedirectAttributes redirectAttributes) {
-
-        Optional<Comment> commentOpt = commentRepository.findById(commentId);
-        if (commentOpt.isPresent()) {
-            Comment comment = commentOpt.get();
-            comment.setComment(commentText);
-            commentRepository.save(comment);
-            redirectAttributes.addAttribute("id", comment.getBook().getId());
-        }
-
-        return "redirect:/viewbook";
-    }
-
-    @PostMapping("/deleteComment")
-    public String deleteComment(@RequestParam("commentId") Long commentId,
-                                RedirectAttributes redirectAttributes) {
-        Optional<Comment> commentOpt = commentRepository.findById(commentId);
-        if (commentOpt.isPresent()) {
-            Long bookId = commentOpt.get().getBook().getId();
-            commentRepository.deleteById(commentId);
-            redirectAttributes.addAttribute("id", bookId);
-        }
-
-        return "redirect:/viewbook";
     }
 }

@@ -7,7 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.cr.hw.domain.Genre;
-import ru.cr.hw.repostory.GenreRepository;
+import ru.cr.hw.services.GenreService;
 
 import java.util.List;
 
@@ -16,11 +16,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GenreController {
 
-    private final GenreRepository genreRepository;
+    private final GenreService genreService;
 
     @GetMapping("/genre")
     public String listPage(@RequestParam(value = "from", required = false) String from, Model model) {
-        List<Genre> genres = genreRepository.findAll();
+        List<Genre> genres = genreService.findAll();
         model.addAttribute("genres", genres);
         model.addAttribute("fromBooks", "books".equals(from));
         return "list_genres";
