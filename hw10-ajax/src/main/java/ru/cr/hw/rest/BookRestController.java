@@ -15,10 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import ru.cr.hw.dto.BookDto;
 import ru.cr.hw.dto.BookCreateDto;
 import ru.cr.hw.dto.BookUpdateDto;
-import ru.cr.hw.services.AuthorService;
 import ru.cr.hw.services.BookService;
 import ru.cr.hw.services.CommentService;
-import ru.cr.hw.services.GenreService;
 
 import java.util.List;
 
@@ -28,10 +26,6 @@ import java.util.List;
 public class BookRestController {
 
     private final BookService bookService;
-
-    private final AuthorService authorService;
-
-    private final GenreService genreService;
 
     private final CommentService commentService;
 

@@ -36,7 +36,7 @@ public class CommentRestController {
      //   BookDto book = bookService.findById(bookId);
 
         List<CommentDto> comments = commentService.findByBookId(bookId);
-        log.info("Возвращаю {} комментариев для книги {}", comments.size(), bookId);
+
         return commentService.findByBookId(bookId);
     }
 
