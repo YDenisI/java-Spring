@@ -1,14 +1,12 @@
 package ru.cr.hw.services;
 
 
-import ru.cr.hw.domain.Author;
-
+import ru.cr.hw.dto.AuthorDto;
 import java.util.List;
-import java.util.Optional;
 
 public interface AuthorService {
 
-    List<Author> findAll();
+    List<AuthorDto> findAll();
 
-    Optional<Author> findById(Long id);
+    AuthorDto findById(Long id);
 }

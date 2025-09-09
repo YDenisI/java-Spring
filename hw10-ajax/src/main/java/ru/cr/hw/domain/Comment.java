@@ -1,6 +1,5 @@
 package ru.cr.hw.domain;
 
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
@@ -30,6 +29,7 @@ public class Comment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id")
+  //  @JsonIgnore
     private Book book;
 
     public Comment(String comment, Book book) {

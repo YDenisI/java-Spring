@@ -1,12 +1,14 @@
 package ru.cr.hw.services;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.cr.hw.domain.Genre;
+import ru.cr.hw.dto.GenreDto;
 import ru.cr.hw.repostory.GenreRepository;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -14,12 +16,16 @@ public class GenreServiceImpl implements GenreService {
     private final GenreRepository genreRepository;
 
     @Override
-    public List<Genre> findAll() {
-        return genreRepository.findAll();
+    public List<GenreDto> findAll() {
+        return genreRepository.findAll().stream()
+                .map(GenreDto::fromDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<Genre> findById(Long id) {
-        return genreRepository.findById(id);
+    public GenreDto findById(Long id) {
+        Genre genre = genreRepository.findById(id).
+                orElseThrow(() -> new EntityNotFoundException("Genre with id %d not found".formatted(id)));
+        return GenreDto.fromDomain(genre);
     }
 }

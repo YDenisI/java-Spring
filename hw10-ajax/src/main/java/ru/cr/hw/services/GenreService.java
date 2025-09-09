@@ -1,13 +1,12 @@
 package ru.cr.hw.services;
 
-import ru.cr.hw.domain.Genre;
 
+import ru.cr.hw.dto.GenreDto;
 import java.util.List;
-import java.util.Optional;
 
 public interface GenreService {
 
-    List<Genre> findAll();
+    List<GenreDto> findAll();
 
-    Optional<Genre> findById(Long id);
+    GenreDto findById(Long id);
 }
