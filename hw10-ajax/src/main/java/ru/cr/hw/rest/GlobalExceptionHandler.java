@@ -28,4 +28,11 @@ public class GlobalExceptionHandler {
                 "Internal server error: " + ex.getMessage(), LocaleContextHolder.getLocale());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"" + errorText + "\"}");
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(Exception ex) {
+        String errorText = messageSource.getMessage("general-error", new Object[]{ex.getMessage()},
+                "Bad Request: " + ex.getMessage(), LocaleContextHolder.getLocale());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"" + errorText + "\"}");
+    }
 }
