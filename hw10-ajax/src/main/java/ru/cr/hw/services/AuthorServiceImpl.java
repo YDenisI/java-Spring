@@ -1,6 +1,5 @@
 package ru.cr.hw.services;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.cr.hw.domain.Author;
