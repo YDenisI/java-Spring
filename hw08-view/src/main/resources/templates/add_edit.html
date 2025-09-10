@@ -64,14 +64,14 @@
 <body>
 
 <!-- book edition -->
-<form id="edit-form" action="add_edit.html" th:action="${book.id != null  and book.id > 0} ? @{/edit(id=${book.id})} : @{/create}" th:method="post" th:object="${book}">
+<form id="edit-form" action="add_edit.html" th:action="${isEdit} ? @{/edit(id=${book.id})} : @{/create}" th:method="post" th:object="${book}">
     <div class="row">
-        <h3 th:if="${book.id != null and book.id > 0}" th:text="#{book-form-header}">Book Info</h3>
-        <h3 th:unless="${book?.id > 0}" th:text="#{add-book-button-caption}">Add Book</h3>
+        <h3 th:if="${isEdit}" th:text="#{book-form-header}">Book Info</h3>
+        <h3 th:unless="${isEdit}" th:text="#{add-book-button-caption}">Add Book</h3>
     </div>
 
 
-    <div class="row" th:if="${book.id != null and book.id > 0}">
+    <div class="row" th:if="${isEdit}">
         <label for="id-input" th:text="#{book-field-id} + ':'">ID:</label>
         <input id="id-input" type="text" readonly="readonly" name="id" th:value="*{id}" value="1"/>
     </div>
@@ -87,7 +87,7 @@
         <select id="author-select" th:field="*{authorId}">
             <option th:each="author : ${allAuthors}"
                     th:value="${author.id}"
-                    th:text="${author.fullName}"
+                    th:text="${author.name}"
                     th:selected="${author.id} == ${book.authorId}">
                 Автор
             </option>
@@ -106,7 +106,7 @@
         </select>
     </div>
 
-    <div class="row" th:unless="${book?.id > 0}">
+    <div class="row" th:unless="${isEdit}">
         <label for="comment-text" th:text="#{comment-field} + ':'">Comment:</label>
         <textarea id="comment-text" name="initialComment" rows="4" cols="50" th:placeholder="#{enter-comment-text}"></textarea>
     </div>

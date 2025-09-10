@@ -7,7 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import ru.cr.hw.domain.Author;
+import ru.cr.hw.dto.AuthorDto;
 import ru.cr.hw.services.AuthorService;
 
 
@@ -22,7 +22,7 @@ public class AuthorController {
 
     @GetMapping("/author")
     public String listPage(@RequestParam(value = "from", required = false) String from, Model model) {
-        List<Author> authors = authorService.findAll();
+        List<AuthorDto> authors = authorService.findAll();
         model.addAttribute("authors", authors);
         model.addAttribute("fromBooks", "books".equals(from));
         return "list_authors";

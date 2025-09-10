@@ -159,7 +159,7 @@
     <tr th:each="book : ${books}">
         <td th:text="${book.id}">1</td>
         <td th:text="${book.title}">John Doe</td>
-        <td th:text="${book.author.fullName}">John Doe</td>
+        <td th:text="${book.author.name}">John Doe</td>
         <td th:text="${book.genre.name}">John Doe</td>
        <td>
             <a th:href="@{/viewbook(id=${book.id})}" href="view_comments.html" th:text="#{view-edit-button-caption}">View</a>

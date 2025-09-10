@@ -1,18 +1,24 @@
 package ru.cr.hw.controller;
 
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import ru.cr.hw.domain.Book;
-import ru.cr.hw.domain.Comment;
+import ru.cr.hw.dto.BookDto;
+import ru.cr.hw.dto.CommentCreateDto;
+import ru.cr.hw.dto.CommentDto;
+import ru.cr.hw.dto.CommentUpdateDto;
 import ru.cr.hw.services.BookService;
 import ru.cr.hw.services.CommentService;
 
-import java.util.Optional;
+import java.util.List;
 
 @Slf4j
 @Controller
@@ -24,29 +30,44 @@ public class CommentController {
     private final BookService bookService;
 
     @PostMapping("/addComment")
-    public String addComment(@RequestParam("bookId") Long bookId,
-                             @RequestParam("commentText") String commentText,
+    public String addComment(@Valid @ModelAttribute("newComment") CommentCreateDto commentCreateDto,
+                             BindingResult bindingResult,
+                             Model model,
                              RedirectAttributes redirectAttributes) {
 
-        Optional<Book> book = bookService.findById(bookId);
-        if (book.isPresent()) {
-            commentService.insert(commentText, bookId);
+        if (bindingResult.hasErrors()) {
+            BookDto book = bookService.findById(commentCreateDto.getBookId());
+            List<CommentDto> comments = commentService.findByBookId(book.getId());
+            model.addAttribute("book", book);
+            model.addAttribute("comments", comments);
+            model.addAttribute("newComment", commentCreateDto);
+            return "redirect:/viewbook";
         }
 
-        redirectAttributes.addAttribute("id", bookId);
+        CommentDto commentDto = commentService.insert(commentCreateDto.getComment(), commentCreateDto.getBookId());
+        redirectAttributes.addAttribute("id", commentDto.getBookId());
         return "redirect:/viewbook";
     }
 
     @PostMapping("/editComment")
-    public String editComment(@RequestParam("commentId") Long commentId,
-                              @RequestParam("commentText") String commentText,
+    public String editComment(@Valid @ModelAttribute("editingComment") CommentUpdateDto commentUpdateDto,
+                              BindingResult bindingResult,
+                              Model model,
                               RedirectAttributes redirectAttributes) {
 
-        Optional<Comment> commentOpt = commentService.findById(commentId);
-        if (commentOpt.isPresent()) {
-            commentService.update(commentId, commentText);
-            redirectAttributes.addAttribute("id", commentOpt.get().getBook().getId());
-        }
+      /*  if (bindingResult.hasErrors()) {
+            BookDto book = bookService.findById(commentDto.getBookId());
+            List<CommentDto> comments = commentService.findByBookId(book.getId());
+            model.addAttribute("book", book);
+            model.addAttribute("comments", comments);
+            model.addAttribute("editingComment", commentDto);
+            model.addAttribute("editingCommentId", commentDto.getId());
+            return "redirect:/viewbook";
+        }*/
+
+        commentService.update(commentUpdateDto.getId(), commentUpdateDto.getComment());
+        CommentDto updated = commentService.findById(commentUpdateDto.getId());
+        redirectAttributes.addAttribute("id", updated.getBookId());
 
         return "redirect:/viewbook";
     }
@@ -54,12 +75,11 @@ public class CommentController {
     @PostMapping("/deleteComment")
     public String deleteComment(@RequestParam("commentId") Long commentId,
                                 RedirectAttributes redirectAttributes) {
-        Optional<Comment> commentOpt = commentService.findById(commentId);
-        if (commentOpt.isPresent()) {
-            Long bookId = commentOpt.get().getBook().getId();
-            commentService.deleteById(commentId);
-            redirectAttributes.addAttribute("id", bookId);
-        }
+
+        CommentDto comment = commentService.findById(commentId);
+        commentService.deleteById(commentId);
+        redirectAttributes.addAttribute("id", comment.getBookId());
+
         return "redirect:/viewbook";
     }
 }

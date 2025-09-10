@@ -171,7 +171,7 @@
                 <strong>Название:</strong> <span th:text="${book.title}"></span>
             </div>
             <div class="detail-item">
-                <strong>Автор:</strong> <span th:text="${book.author.fullName}"></span>
+                <strong>Автор:</strong> <span th:text="${book.author.name}"></span>
             </div>
             <div class="detail-item">
                 <strong>Жанр:</strong> <span th:text="${book.genre.name}"></span>
@@ -185,9 +185,10 @@
 
 <div class="add-comment-form">
     <h4 th:text="#{add-new-comment-text}">Добавить новый комментарий:</h4>
-    <form th:action="@{/addComment}" method="post">
-        <input type="hidden" name="bookId" th:value="${book.id}">
-        <textarea name="commentText" th:text="#{enter-comment-text}" placeholder="Введите ваш комментарий..." required></textarea>
+    <form th:action="@{/addComment}" method="post" th:object="${newComment}">
+        <input type="hidden" th:field="*{bookId}" />
+        <textarea th:field="*{comment}" th:text="#{enter-comment-text}" placeholder="Введите ваш комментарий..." required></textarea>
+        <div class="errors" th:if="${#fields.hasErrors('comment')}" th:errors="*{comment}"></div>
         <div class="form-buttons">
             <button type="submit" th:text="#{add-comment-text}">Добавить комментарий</button>
         </div>
@@ -197,9 +198,9 @@
 <div class="comments-container">
     <div th:each="comment : ${comments}" class="comment-box">
         <div th:if="${editingCommentId != null and editingCommentId == comment.id}" class="edit-comment-form">
-            <form th:action="@{/editComment}" method="post">
-                <input type="hidden" name="commentId" th:value="${comment.id}">
-                <textarea name="commentText" th:text="${comment.comment}" required></textarea>
+            <form th:action="@{/editComment}" method="post" th:object="${editingComment}">
+                <input type="hidden" th:field="*{id}">
+                <textarea th:field="*{comment}" required></textarea>
                 <div class="form-buttons">
                     <button type="submit" th:text="#{save-text}">Сохранить</button>
                     <a th:href="@{/viewbook(id=${book.id})}">

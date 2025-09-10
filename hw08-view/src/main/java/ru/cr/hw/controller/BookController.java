@@ -12,10 +12,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import ru.cr.hw.domain.Author;
-import ru.cr.hw.domain.Book;
-import ru.cr.hw.domain.Genre;
-import ru.cr.hw.domain.Comment;
+import ru.cr.hw.dto.AuthorDto;
+import ru.cr.hw.dto.GenreDto;
+import ru.cr.hw.dto.BookCreateDto;
+import ru.cr.hw.dto.BookUpdateDto;
+import ru.cr.hw.dto.CommentDto;
 import ru.cr.hw.dto.BookDto;
 import ru.cr.hw.services.AuthorService;
 import ru.cr.hw.services.BookService;
@@ -23,7 +24,6 @@ import ru.cr.hw.services.CommentService;
 import ru.cr.hw.services.GenreService;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -40,85 +40,64 @@ public class BookController {
 
     @GetMapping("/")
     public String listPage(Model model) {
-        List<Book> books = bookService.findAll();
+        List<BookDto> books = bookService.findAll();
         model.addAttribute("books", books);
         return "list_books";
     }
 
     @GetMapping("/edit")
     public String editPage(@RequestParam(value = "id", required = false) Long id, Model model) {
-        List<Author> allAuthors = authorService.findAll();
-        List<Genre> allGenres = genreService.findAll();
+        List<AuthorDto> allAuthors = authorService.findAll();
+        List<GenreDto> allGenres = genreService.findAll();
         model.addAttribute("allAuthors", allAuthors);
         model.addAttribute("allGenres", allGenres);
 
-        BookDto bookDto;
         if (id != null) {
-            Optional<Book> bookOpt = bookService.findById(id);
-            if (bookOpt.isEmpty()) {
-                throw new NotFoundException();
+            BookDto existingBook = bookService.findById(id);
+            if (existingBook != null) {
+                BookUpdateDto bookUpdateDto = new BookUpdateDto(existingBook.getId(), existingBook.getTitle(),
+                        existingBook.getAuthor().getId(), existingBook.getGenre().getId());
+                model.addAttribute("book", bookUpdateDto);
+                model.addAttribute("isEdit", true);
+            } else {
+                return "redirect:/";
             }
-            bookDto = BookDto.fromDomain(bookOpt.get());
         } else {
-            bookDto = new BookDto();
-            if (!allAuthors.isEmpty()) {
-                bookDto.setAuthorId(allAuthors.get(0).getId());
-            }
-            if (!allGenres.isEmpty()) {
-                bookDto.setGenreId(allGenres.get(0).getId());
-            }
+            Long defaultAuthorId = allAuthors.isEmpty() ? null : allAuthors.get(0).getId();
+            Long defaultGenreId = allGenres.isEmpty() ? null : allGenres.get(0).getId();
+            BookCreateDto bookCreateDto = new BookCreateDto(null, defaultAuthorId, defaultGenreId, null);
+            model.addAttribute("book", bookCreateDto);
+            model.addAttribute("isEdit", false);
         }
-        model.addAttribute("book", bookDto);
         return "add_edit";
     }
 
     @PostMapping("/edit")
-    public String editBook(@Valid @ModelAttribute("book") BookDto bookDto,
-                           BindingResult bindingResult,
-                            // @RequestParam("author.id") Long authorId,
-                            // @RequestParam("genre.id") Long genreId,
+    public String updateBook(@Valid @ModelAttribute("book") BookUpdateDto bookDto,
+                             BindingResult bindingResult,
                              @RequestParam(value = "initialComment", required = false) String initialComment,
                              Model model) {
 
         if (bindingResult.hasErrors()) {
-            List<Author> allAuthors = authorService.findAll();
-            List<Genre> allGenres = genreService.findAll();
+            List<AuthorDto> allAuthors = authorService.findAll();
+            List<GenreDto> allGenres = genreService.findAll();
             model.addAttribute("allAuthors", allAuthors);
             model.addAttribute("allGenres", allGenres);
             return "add_edit";
         }
 
-        Author author = authorService.findById(bookDto.getAuthorId()).orElseThrow(() -> new NotFoundException());
-        Genre genre = genreService.findById(bookDto.getGenreId()).orElseThrow(() -> new NotFoundException());
+        bookService.update(bookDto.getId(), bookDto.getTitle(), bookDto.getAuthorId(), bookDto.getGenreId());
 
-        bookService.update(bookDto.getId(), bookDto.getTitle(), author.getId(), genre.getId());
-
-   /*     Optional<Author> authorOpt = authorService.findById(authorId);
-        Optional<Genre> genreOpt = genreService.findById(genreId);
-        Book existingBook = bookService.findById(book.getId()).orElseThrow();
-        existingBook.setTitle(book.getTitle());
-        existingBook.setAuthor(authorOpt.get());
-        existingBook.setGenre(genreOpt.get());
-        bookService.update(book.getId(),book.getTitle(), authorOpt.get().getId(), genreOpt.get().getId());
-*/
         return "redirect:/";
     }
 
     @PostMapping("/create")
-    public String createBook(@Valid @ModelAttribute("book") BookDto bookDto,
-                           @RequestParam("authorId") Long authorId,
-                           @RequestParam("genreId") Long genreId,
+    public String createBook(@Valid @ModelAttribute("book") BookCreateDto bookDto,
                            @RequestParam(value = "initialComment", required = false) String initialComment,
                            Model model) {
 
-        Optional<Author> authorOpt = authorService.findById(authorId);
-        Optional<Genre> genreOpt = genreService.findById(genreId);
-        Book book =  bookDto.toDomain(authorOpt.get(), genreOpt.get());
-        Book savedBook = bookService.insert(book.getTitle(), book.getAuthor().getId(), book.getGenre().getId());
+        BookDto savedBook = bookService.insert(bookDto.getTitle(), bookDto.getAuthorId(), bookDto.getGenreId());
             if (initialComment != null && !initialComment.trim().isEmpty()) {
-                Comment comment = new Comment();
-                comment.setComment(initialComment.trim());
-                comment.setBook(savedBook);
                 commentService.insert(initialComment.trim(), savedBook.getId());
             }
         return "redirect:/";
@@ -126,16 +105,10 @@ public class BookController {
 
     @PostMapping("/deleteBook")
     public String deleteBook(@RequestParam("bookId") Long id, RedirectAttributes redirectAttributes) {
-        Optional<Book> bookOpt = bookService.findById(id);
-        if (bookOpt.isEmpty()) {
-            throw new NotFoundException();
-        }
-        if (bookOpt.isPresent()) {
-            bookService.deleteById(bookOpt.get().getId());
-            redirectAttributes.addFlashAttribute("message", "Book deleted successfully!");
-        } else {
-            redirectAttributes.addFlashAttribute("error", "Book not found!");
-        }
+
+         bookService.deleteById(id);
+         redirectAttributes.addFlashAttribute("message", "Book deleted successfully!");
+
         return "redirect:/";
     }
 
@@ -144,19 +117,17 @@ public class BookController {
                            @RequestParam(value = "editCommentId", required = false) Long editCommentId,
                            Model model) {
 
-        Optional<Book> book = bookService.findById(id);
-        if (book.isEmpty()) {
-            throw new NotFoundException();
-        }
-        List<Author> allAuthors = authorService.findAll();
-        List<Genre> allGenres = genreService.findAll();
-        List<Comment> comments = commentService.findByBookId(book.get().getId());
-        model.addAttribute("book", book.get());
-        model.addAttribute("allAuthors", allAuthors);
-        model.addAttribute("allGenres", allGenres);
+        BookDto book = bookService.findById(id);
+        List<CommentDto> comments = commentService.findByBookId(book.getId());
+        model.addAttribute("book", book);
         model.addAttribute("comments", comments);
 
+        CommentDto newComment = new CommentDto(null, "", book.getId());
+        model.addAttribute("newComment", newComment);
+
         if (editCommentId != null) {
+            CommentDto editingComment = commentService.findById(editCommentId);
+            model.addAttribute("editingComment", editingComment);
             model.addAttribute("editingCommentId", editCommentId);
         }
 
