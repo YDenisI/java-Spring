@@ -217,7 +217,7 @@
             url: `/api/comments/${id}`,
             method: 'PUT',
             contentType: 'application/json',
-            data: JSON.stringify({ comment: newText }),
+            data: JSON.stringify({ id: id, comment: newText }),
             success: function() {
                 editingCommentId = null;
                 loadComments();
@@ -252,8 +252,8 @@ const $form = $(form);
     $.ajax({
         url: `/api/books/${bookId}/comments`,
         method: 'POST',
-        contentType: 'application/json', // важно указать JSON
-        data: JSON.stringify({ comment: text }),
+        contentType: 'application/json',
+        data: JSON.stringify({ comment: text, bookId: bookId}),
         success: function() {
             $form.find('#newCommentText').val('');
             loadComments();

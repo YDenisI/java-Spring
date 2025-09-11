@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import ru.cr.hw.dto.CommentCreateUpdateDto;
+import ru.cr.hw.dto.CommentCreateDto;
+import ru.cr.hw.dto.CommentUpdateDto;
 import ru.cr.hw.dto.CommentDto;
 import ru.cr.hw.services.BookService;
 import ru.cr.hw.services.CommentService;
@@ -42,17 +43,22 @@ public class CommentRestController {
 
     @PostMapping("/api/books/{bookId}/comments")
     public ResponseEntity<CommentDto> addComment(@PathVariable Long bookId,
-                                                 @Valid @RequestBody CommentCreateUpdateDto newCommentDto) {
-
-        CommentDto created = commentService.insert(newCommentDto.getComment(), bookId);
+                                                 @Valid @RequestBody CommentCreateDto newCommentDto) {
+        if (!bookId.equals(newCommentDto.getBookId())) {
+            throw new IllegalArgumentException("Path variable bookId and newCommentDto id must match");
+        }
+        CommentDto created = commentService.insert(newCommentDto.getComment(), newCommentDto.getBookId());
         return ResponseEntity.created(URI.create("/api/comments/" + created.getId()))
                 .body(created);
     }
 
     @PutMapping("/api/comments/{commentId}")
     public ResponseEntity<CommentDto> updateComment(@PathVariable Long commentId,
-                                                    @RequestBody CommentCreateUpdateDto updatedCommentDto) {
+                                                    @RequestBody CommentUpdateDto updatedCommentDto) {
 
+        if (!commentId.equals(updatedCommentDto.getId())) {
+            throw new IllegalArgumentException("Path variable commentId and updatedCommentDto id must match");
+        }
         commentService.update(commentId, updatedCommentDto.getComment());
         CommentDto updated = commentService.findById(commentId);
         return ResponseEntity.ok(updated);
