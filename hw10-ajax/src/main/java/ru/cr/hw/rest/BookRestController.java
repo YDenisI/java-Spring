@@ -42,14 +42,7 @@ public class BookRestController {
 
     @PostMapping
     public ResponseEntity<BookDto> createBook(@RequestBody @Valid BookCreateDto createDto) {
-        BookDto savedBook = bookService.insert(
-                createDto.getTitle(),
-                createDto.getAuthorId(),
-                createDto.getGenreId());
-
-        if (createDto.getInitialComment() != null && !createDto.getInitialComment().trim().isEmpty()) {
-            commentService.insert(createDto.getInitialComment().trim(), savedBook.getId());
-        }
+        BookDto savedBook = bookService.insert(createDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedBook);
     }
 
@@ -59,7 +52,7 @@ public class BookRestController {
             throw new IllegalArgumentException("Path variable id and BookDto id must match");
         }
 
-        bookService.update(updateDto.getId(), updateDto.getTitle(), updateDto.getAuthorId(), updateDto.getGenreId());
+        bookService.update(updateDto);
         BookDto updatedBook = bookService.findById(updateDto.getId());
         return ResponseEntity.ok(updatedBook);
     }

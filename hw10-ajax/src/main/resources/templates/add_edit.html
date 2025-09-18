@@ -113,7 +113,19 @@
             color: #388e3c;
             text-decoration: underline;
         }
-
+        textarea {
+            width: 100%;
+            padding: 7px 9px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
     </style>
 </head>
 <body>
@@ -140,6 +152,11 @@
         <select id="genreId" name="genreId" required>
             <option value="">Загрузка...</option>
         </select>
+
+        <div th:if="${!isEdit}">
+            <label for="initialComment" th:text="#{comment-field}">Комментарий (опционально):</label>
+            <textarea id="initialComment" name="initialComment" rows="4" placeholder="Введите комментарий (если нужно)"></textarea>
+        </div>
 
         <button type="submit" onclick="saveBook()" id="saveBtn"th:text="#{save-button-caption}">Сохранить</button>
     </form>
@@ -243,8 +260,17 @@ const formData = {
     title: document.getElementById('title').value,
     authorId: parseInt(document.getElementById('authorId').value),
     genreId: parseInt(document.getElementById('genreId').value),
-    initialComment: null
 };
+
+ if (!isEdit) {
+        const initialCommentValue = $('#initialComment').val().trim();
+        if (initialCommentValue) {
+            formData.initialComment = {
+                comment: initialCommentValue,
+                bookId: null
+            };
+        }
+    }
 
 const method = isEdit ? 'PUT' : 'POST';
 const url = isEdit ? '/api/books/' + bookId : '/api/books';

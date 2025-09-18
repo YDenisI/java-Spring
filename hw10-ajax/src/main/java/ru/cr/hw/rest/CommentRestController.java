@@ -47,7 +47,7 @@ public class CommentRestController {
         if (!bookId.equals(newCommentDto.getBookId())) {
             throw new IllegalArgumentException("Path variable bookId and newCommentDto id must match");
         }
-        CommentDto created = commentService.insert(newCommentDto.getComment(), newCommentDto.getBookId());
+        CommentDto created = commentService.insert(newCommentDto);
         return ResponseEntity.created(URI.create("/api/comments/" + created.getId()))
                 .body(created);
     }
@@ -59,7 +59,7 @@ public class CommentRestController {
         if (!commentId.equals(updatedCommentDto.getId())) {
             throw new IllegalArgumentException("Path variable commentId and updatedCommentDto id must match");
         }
-        commentService.update(commentId, updatedCommentDto.getComment());
+        commentService.update(updatedCommentDto);
         CommentDto updated = commentService.findById(commentId);
         return ResponseEntity.ok(updated);
     }

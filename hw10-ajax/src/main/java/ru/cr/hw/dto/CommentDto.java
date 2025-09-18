@@ -2,9 +2,11 @@ package ru.cr.hw.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 import ru.cr.hw.domain.Book;
 import ru.cr.hw.domain.Comment;
 
+@Data
 public class CommentDto {
     private Long id;
 
@@ -39,29 +41,5 @@ public class CommentDto {
         c.setComment(comment);
         c.setBook(book);
         return c;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public Long getBookId() {
-        return bookId;
-    }
-
-    public void setBookId(Long bookId) {
-        this.bookId = bookId;
     }
 }

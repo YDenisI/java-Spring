@@ -1,7 +1,9 @@
 package ru.cr.hw.dto;
 
+import lombok.Data;
 import ru.cr.hw.domain.Author;
 
+@Data
 public class AuthorDto {
 
     private Long id;
@@ -30,21 +32,5 @@ public class AuthorDto {
         }
         author.setFullName(this.name);
         return author;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 }

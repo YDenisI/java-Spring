@@ -3,7 +3,9 @@ package ru.cr.hw.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 
+@Data
 public class CommentCreateDto {
 
     @NotBlank(message = "Комментарий не может быть пустым")
@@ -20,21 +22,4 @@ public class CommentCreateDto {
         this.comment = comment;
         this.bookId = bookId;
     }
-
-    public Long getBookId() {
-        return bookId;
-    }
-
-    public void setBookId(Long bookId) {
-        this.bookId = bookId;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
 }

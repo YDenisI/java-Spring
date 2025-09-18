@@ -1,9 +1,11 @@
 package ru.cr.hw.dto;
 
+import lombok.Data;
 import ru.cr.hw.domain.Author;
 import ru.cr.hw.domain.Book;
 import ru.cr.hw.domain.Genre;
 
+@Data
 public class BookDto {
 
     private Long id;
@@ -62,45 +64,5 @@ public class BookDto {
         }
         return book;
 
-    }
-    
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public AuthorDto getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(AuthorDto author) {
-        this.author = author;
-    }
-
-    public GenreDto getGenre() {
-        return genre;
-    }
-
-    public void setGenre(GenreDto genre) {
-        this.genre = genre;
-    }
-
-    public String getInitialComment() {
-        return initialComment;
-    }
-
-    public void setInitialComment(String initialComment) {
-        this.initialComment = initialComment;
     }
 }

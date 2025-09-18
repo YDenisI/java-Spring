@@ -3,7 +3,9 @@ package ru.cr.hw.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 
+@Data
 public class CommentUpdateDto {
 
     @NotNull
@@ -20,23 +22,4 @@ public class CommentUpdateDto {
         this.id = id;
         this.comment = comment;
     }
-
-    public @NotNull Long getId() {
-        return id;
-    }
-
-    public void setId(@NotNull Long id) {
-        this.id = id;
-    }
-
-
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
 }

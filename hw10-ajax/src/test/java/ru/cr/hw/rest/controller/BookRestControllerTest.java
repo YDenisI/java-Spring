@@ -80,10 +80,10 @@ public class BookRestControllerTest {
 
     @Test
     void shouldCreateBookWithoutInitialComment() throws Exception {
-        BookCreateDto createDto = new BookCreateDto("New Book", 1L, 2L, null);
+        BookCreateDto createDto = new BookCreateDto("New Book", 1L, 2L, new CommentCreateDto("New comment", null));
         BookDto savedBook = createBookDto(3L, "New Book", 1L, "Author One", 2L, "Genre Two");
 
-        given(bookService.insert("New Book", 1L, 2L)).willReturn(savedBook);
+        given(bookService.insert(createDto)).willReturn(savedBook);
 
         mockMvc.perform(post("/api/books")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -94,10 +94,10 @@ public class BookRestControllerTest {
 
     @Test
     void shouldCreateBookWithInitialComment() throws Exception {
-        BookCreateDto createDto = new BookCreateDto("New Book", 1L, 2L, "Great book!");
+        BookCreateDto createDto = new BookCreateDto("New Book", 1L, 2L, new CommentCreateDto("New comment", null));
         BookDto savedBook = createBookDto(3L, "New Book", 1L, "Author One", 2L, "Genre Two");
 
-        given(bookService.insert("New Book", 1L, 2L)).willReturn(savedBook);
+        given(bookService.insert(createDto)).willReturn(savedBook);
 
         mockMvc.perform(post("/api/books")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -1,6 +1,9 @@
 package ru.cr.hw.services;
 
+import ru.cr.hw.dto.BookCreateDto;
 import ru.cr.hw.dto.BookDto;
+import ru.cr.hw.dto.BookUpdateDto;
+
 import java.util.List;
 
 public interface BookService {
@@ -8,9 +11,9 @@ public interface BookService {
 
     List<BookDto> findAll();
 
-    BookDto insert(String title, long authorId, long genreId);
+    BookDto insert(BookCreateDto createDto);
 
-    BookDto update(long id, String title, long authorId, long genreId);
+    BookDto update(BookUpdateDto updateDto);
 
     void deleteById(long id);
 }

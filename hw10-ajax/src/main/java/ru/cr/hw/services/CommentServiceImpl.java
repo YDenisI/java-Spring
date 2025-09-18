@@ -5,7 +5,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.cr.hw.domain.Comment;
+import ru.cr.hw.dto.CommentCreateDto;
 import ru.cr.hw.dto.CommentDto;
+import ru.cr.hw.dto.CommentUpdateDto;
 import ru.cr.hw.repostory.BookRepository;
 import ru.cr.hw.repostory.CommentRepository;
 
@@ -37,7 +39,9 @@ public class CommentServiceImpl implements CommentService {
 
 
     @Override
-    public CommentDto insert(String comment, long bookId) {
+    public CommentDto insert(CommentCreateDto commentCreateDto) {
+        Long bookId = commentCreateDto.getBookId();
+        String comment = commentCreateDto.getComment();
         var existBook = bookRepository.findById(bookId)
                 .orElseThrow(() -> new EntityNotFoundException("Book with id %d not found".formatted(bookId)));
         var newComment = new Comment(comment, existBook);
@@ -46,7 +50,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public CommentDto update(long id, String comment) {
+    public CommentDto update(CommentUpdateDto commentUpdateDto) {
+        Long id = commentUpdateDto.getId();
+        String comment = commentUpdateDto.getComment();
         var existComment = commentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Comment with id %d not found".formatted(id)));
         existComment.setComment(comment);
