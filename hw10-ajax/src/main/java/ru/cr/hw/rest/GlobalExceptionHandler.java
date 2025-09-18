@@ -16,13 +16,13 @@ import ru.cr.hw.rest.exceptions.NotFoundException;
 @RestControllerAdvice  // Автоматически добавляет @ResponseBody для JSON
 public class GlobalExceptionHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     private final MessageSource messageSource;
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorDto> handleNotFoundException(NotFoundException ex) {
-        logger.error("NotFoundException occurred: ", ex);
+        LOGGER.error("NotFoundException occurred: ", ex);
         String errorText = messageSource.getMessage("book-not-found-error", null,
                 LocaleContextHolder.getLocale());
 
@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDto> handleGeneralException(Exception ex) {
-        logger.error("General Exception occurred: ", ex);
+        LOGGER.error("General Exception occurred: ", ex);
         String errorText = messageSource.getMessage("general-error", new Object[]{ex.getMessage()},
                 "Internal server error: " + ex.getMessage(), LocaleContextHolder.getLocale());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -41,7 +41,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorDto> handleIllegalArgumentException(Exception ex) {
-        logger.error("IllegalArgumentException occurred: ", ex);
+        LOGGER.error("IllegalArgumentException occurred: ", ex);
         String errorText = messageSource.getMessage("general-error", new Object[]{ex.getMessage()},
                 "Bad Request: " + ex.getMessage(), LocaleContextHolder.getLocale());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
