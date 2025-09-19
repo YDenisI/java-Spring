@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Комментарии к книге</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        #commentsApp {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .back-button {
+            background-color: #95a5a6;
+            margin-bottom: 20px;
+        }
+        .back-button:hover {
+            background-color: #7f8c8d;
+        }
+        #bookInfo {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 4px;
+        }
+        .comment-form {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 4px;
+        }
+        #commentsList {
+            margin-bottom: 20px;
+        }
+        .comment {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background-color: #fafafa;
+            position: relative;
+        }
+        .comment-buttons {
+            margin-top: 10px;
+        }
+        .comment-buttons button {
+            margin-right: 10px;
+        }
+        .edit-form-inline {
+            margin-top: 10px;
+            background-color: #ecf0f1;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .edit-form-inline textarea {
+            width: 100%;
+            height: 80px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 10px;
+        }
+
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div id="commentsApp" th:data-book-id="${bookId}">
+    <button class="back-button" onclick="history.back()" th:text="#{back-text}">Назад</button>
+    <h1 th:text="#{comments-text}">Комментарии к книге</h1>
+    <div id="bookInfo"><p>Загрузка данных книги...</p></div>
+
+    <div class="comment-form">
+        <h2 th:text="#{add-comment-text}">Добавить комментарий</h2>
+        <form id="addCommentForm">
+            <textarea id="newCommentText" required></textarea><br>
+            <button type="submit" th:text="#{add-text}" onclick="return addComment(this.form)">Добавить</button>
+        </form>
+    </div>
+
+    <div id="commentsList"><p>Загрузка комментариев...</p></div>
+
+    <div id="commentButtonsTemplate" style="display:none;">
+        <div class="comment-buttons">
+            <button class="edit-btn" th:text="#{edit-text}" onclick="editComment(this)" data-id="">Редактировать</button>
+            <button class="delete-btn" th:text="#{delete-text}" onclick="deleteComment(this)" data-id="">Удалить</button>
+        </div>
+    </div>
+
+    <div id="editFormTemplate" style="display:none;">
+        <form class="edit-form-inline" data-id="">
+            <textarea required></textarea><br>
+            <button type="submit" th:text="#{save-text}" onclick="return saveEdit(this.form)">Сохранить</button>
+            <button type="button" th:text="#{cancel-text}" class="cancel-edit" onclick="cancelEdit()">Отмена</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let editingCommentId = null;
+    let currentCommentsCache = [];
+    const $app = $('#commentsApp');
+    const bookId = $app.data('book-id');
+    const $bookInfo = $('#bookInfo');
+    const $commentsList = $('#commentsList');
+    const $newCommentText = $('#newCommentText');
+
+    function escapeHtml(text) {
+        return $('<div>').text(text).html();
+    }
+
+    function escapeJs(text) {
+        return text.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '');
+    }
+
+    function loadBook() {
+        $.get(`/api/books/${bookId}`)
+            .done(function(book) {
+                $bookInfo.html(
+                    `<h2>${escapeHtml(book.title)}</h2>
+                     <p>Автор: ${escapeHtml(book.authorName)}</p>
+                     <p>Жанр: ${escapeHtml(book.genreName)}</p>`
+                );
+            })
+            .fail(function() {
+                $bookInfo.html('<p>Ошибка загрузки данных книги.</p>');
+            });
+    }
+
+    function renderComments(comments) {
+        if (!comments.length) {
+            $commentsList.html('<p>Комментариев пока нет.</p>');
+            return;
+        }
+
+        $commentsList.empty();
+
+        comments.forEach(c => {
+            const $commentDiv = $('<div>').addClass('comment').attr('data-id', c.id).append(`<p>${escapeHtml(c.comment)}</p>`);
+
+            if (editingCommentId === c.id) {
+                const $editForm = $('#editFormTemplate form').clone();
+                $editForm.attr('data-id', c.id);
+                $editForm.find('textarea').val(c.comment);
+                $commentDiv.append($editForm);
+            } else {
+                const $buttons = $('#commentButtonsTemplate .comment-buttons').clone();
+                $buttons.find('.edit-btn').attr('data-id', c.id);
+                $buttons.find('.delete-btn').attr('data-id', c.id);
+                $commentDiv.append($buttons);
+            }
+
+            $commentsList.append($commentDiv);
+        });
+    }
+
+    function loadComments() {
+        $.get(`/api/books/${bookId}/comments`)
+            .done(function(comments) {
+                currentCommentsCache = comments;
+                renderComments(comments);
+            })
+            .fail(function() {
+                $commentsList.html('<p>Ошибка загрузки комментариев.</p>');
+            });
+    }
+
+    function editComment(button) {
+        editingCommentId = +$(button).data('id');
+        renderComments(currentCommentsCache);
+    }
+
+    function cancelEdit() {
+        editingCommentId = null;
+        renderComments(currentCommentsCache);
+    }
+
+    function saveEdit(form) {
+        const $form = $(form);
+        const id = +$form.data('id');
+        const newText = $form.find('textarea').val().trim();
+        if (!newText) {
+            alert('Комментарий не может быть пустым');
+            return false;
+        }
+        $.ajax({
+            url: `/api/comments/${id}`,
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({ id: id, comment: newText }),
+            success: function() {
+                editingCommentId = null;
+                loadComments();
+            },
+            error: function() {
+                alert('Ошибка обновления комментария');
+            }
+        });
+        return false;
+    }
+
+    function deleteComment(button) {
+        const id = +$(button).data('id');
+        if (!confirm('Удалить комментарий?')) return;
+        $.ajax({
+            url: `/api/comments/${id}`,
+            method: 'DELETE',
+            success: function() {
+                loadComments();
+            },
+            error: function() {
+                alert('Ошибка удаления комментария');
+            }
+        });
+    }
+
+    function addComment(form) {
+const $form = $(form);
+    const text = $form.find('#newCommentText').val().trim();
+    if (!text) return false;
+
+    $.ajax({
+        url: `/api/books/${bookId}/comments`,
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ comment: text, bookId: bookId}),
+        success: function() {
+            $form.find('#newCommentText').val('');
+            loadComments();
+        },
+        error: function(xhr, status, error) {
+            console.error('Ошибка добавления:', xhr.responseText, status, error);
+            alert('Ошибка: ' + xhr.responseText);
+        }
+    });
+    return false;
+    }
+
+    $(function() {
+        loadBook();
+        loadComments();
+    });
+</script>
+</body>
+</html>
