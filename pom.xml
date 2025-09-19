@@ -21,6 +21,7 @@
         <module>hw08-view</module>
         <module>hw09-mongodb</module>
         <module>hw10-ajax</module>
+        <module>hw11-auth</module>
     </modules>
 
     <properties>
