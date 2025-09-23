@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Edit book</title>
+    <style type="text/css">
+        body {
+            padding: 50px;
+        }
+
+        label {
+            display: inline-block;
+            width: 100px;
+        }
+
+        input:read-only {
+            background: lightgray;
+        }
+
+        .row {
+            margin-top: 10px;
+        }
+
+        h3 {
+            background-image: url("../static/listmark.png");
+            background-repeat: no-repeat;
+            padding: 2px;
+            padding-left: 30px;
+        }
+
+        .comments-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.comment-card {
+    background-color: #f0f0f0;
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.comment-header {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+        .errors {
+            color: red;
+        }
+    </style>
+
+    <style type="text/css" th:inline="text">
+        [[h3]] {
+            background-image: url([[@{/listmark.png}]]);
+            background-repeat: no-repeat;
+            padding: 2px;
+            padding-left: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- book edition -->
+<form id="edit-form" action="add_edit.html" th:action="${isEdit} ? @{/book/edit(id=${book.id})} : @{/create}" th:method="post" th:object="${book}">
+    <div class="row">
+        <h3 th:if="${isEdit}" th:text="#{book-form-header}">Book Info</h3>
+        <h3 th:unless="${isEdit}" th:text="#{add-book-button-caption}">Add Book</h3>
+    </div>
+
+
+    <div class="row" th:if="${isEdit}">
+        <label for="id-input" th:text="#{book-field-id} + ':'">ID:</label>
+        <input id="id-input" type="text" readonly="readonly" name="id" th:value="*{id}" value="1"/>
+    </div>
+
+    <div class="row">
+        <label for="book-title-input" th:text="#{book-field-name} + ':'">Name:</label>
+        <input id="book-title-input" name="title" type="text" th:value="*{title}" value="John Doe" required/>
+        <div class="errors" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">Wrong book name error</div>
+    </div>
+
+    <div class="row">
+        <label for="author-select" th:text="#{book-field-author} + ':'">Author:</label>
+        <select id="author-select" th:field="*{authorId}">
+            <option th:each="author : ${allAuthors}"
+                    th:value="${author.id}"
+                    th:text="${author.name}"
+                    th:selected="${author.id} == ${book.authorId}">
+                Автор
+            </option>
+        </select>
+    </div>
+
+    <div class="row">
+        <label for="genre-select" th:text="#{book-field-genre} + ':'">Genre:</label>
+        <select id="genre-select" th:field="*{genreId}">
+            <option th:each="genre : ${allGenres}"
+                    th:value="${genre.id}"
+                    th:text="${genre.name}"
+                    th:selected="${genre.id} == ${book.genreId}">
+                Жанр
+            </option>
+        </select>
+    </div>
+
+    <div class="row" th:unless="${isEdit}">
+        <label for="comment-text" th:text="#{comment-field} + ':'">Comment:</label>
+        <textarea id="comment-text" th:field="*{initialComment.comment}" rows="4" cols="50" th:placeholder="#{enter-comment-text}"></textarea>
+    </div>
+
+
+    <div class="row">
+        <button type="submit" th:text="#{save-button-caption}">Save</button>
+        <a href="list_books.html" th:href="@{/}"><button type="button" th:text="#{cancel-button-caption}">Cancel</button></a>
+    </div>
+
+</form>
+
+</body>
+</html>
