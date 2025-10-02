@@ -1,7 +1,6 @@
 package ru.cr.hw.models;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "comments")
@@ -11,14 +10,15 @@ public class Comment {
 
     private String comment;
 
-    @DBRef(lazy = true)
-    private Book book;
+    private String bookId;
 
-    public Comment() {}
+    public Comment() {
 
-    public Comment(String comment, Book book) {
+    }
+
+    public Comment(String comment, String bookId) {
         this.comment = comment;
-        this.book = book;
+        this.bookId = bookId;
     }
 
     public String getId() {
@@ -37,11 +37,11 @@ public class Comment {
         this.comment = comment;
     }
 
-    public Book getBook() {
-        return book;
+    public String getBookId() {
+        return bookId;
     }
 
-    public void setBook(Book book) {
-        this.book = book;
+    public void setBookId(String bookId) {
+        this.bookId = bookId;
     }
 }

@@ -3,8 +3,10 @@ package ru.cr.hw.commands;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import ru.cr.hw.converters.CommentConverter;
+import ru.cr.hw.dto.CommentCreateDto;
+import ru.cr.hw.dto.CommentDto;
+import ru.cr.hw.dto.CommentUpdateDto;
 import ru.cr.hw.exceptions.EntityNotFoundException;
-import ru.cr.hw.models.Comment;
 import ru.cr.hw.services.CommentService;
 
 import java.util.List;
@@ -25,36 +27,36 @@ public class CommentCommands {
 
     @ShellMethod(value = "Find comment", key = "fc")
     public String findById(String id) {
-        return commentService.findById(id)
-                .map(commentConverter::commentToString)
-                .orElse("Comment with id %d not found".formatted(id));
+        return  commentConverter.commentToString(commentService.findById(id));
     }
 
     @ShellMethod(value = "Find all comment for book", key = "fcb")
     public String findByBookId(String id) {
         try {
-            List<Comment> comments = commentService.findByBookId(id);
+            List<CommentDto> comments = commentService.findByBookId(id);
             if (!comments.isEmpty()) {
                 return comments.stream()
                         .map(commentConverter::commentToString)
                         .collect(Collectors.joining("," + System.lineSeparator()));
             } else {
-                return "Comments for Book with id %d not found".formatted(id);
+                return "Comments for Book with id %s not found".formatted(id);
             }
         } catch (EntityNotFoundException e) {
-            return "Comments for Book with id %d not found".formatted(id);
+            return "Comments for Book with id %s not found".formatted(id);
         }
     }
 
     @ShellMethod(value = "Insert comment", key = "cins")
     public String insertComment(String comment, String bookId) {
-        var savedComment = commentService.insert(comment, bookId);
+        var commentCreateDto = new CommentCreateDto(comment,bookId);
+        var savedComment = commentService.insert(commentCreateDto);
         return commentConverter.commentToString(savedComment);
     }
 
     @ShellMethod(value = "Update commet", key = "cupd")
     public String updateComment(String id, String comment) {
-        var savedComment = commentService.update(id, comment);
+        var commentUpdateDto = new CommentUpdateDto(id, comment);
+        var savedComment = commentService.update(commentUpdateDto);
         return commentConverter.commentToString(savedComment);
     }
 

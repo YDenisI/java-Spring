@@ -1,20 +1,19 @@
 package ru.cr.hw.services;
 
-import ru.cr.hw.models.Book;
+import ru.cr.hw.dto.BookCreateDto;
+import ru.cr.hw.dto.BookDto;
+import ru.cr.hw.dto.BookUpdateDto;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface BookService {
-    Optional<Book> findById(String id);
+    BookDto findById(String id);
 
-    List<Book> findAll();
+    List<BookDto> findAll();
 
-    Book insert(String title, String authorId, String genreId);
+    BookDto insert(BookCreateDto bookCreateDto);
 
-    Book update(String id, String title, String authorId, String genreId);
+    BookDto update(BookUpdateDto bookUpdateDto);
 
     void deleteById(String id);
-
-    List<Book> findByAuthor(String id);
 }

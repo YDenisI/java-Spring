@@ -1,15 +1,12 @@
 package ru.cr.hw.services;
 
-import ru.cr.hw.models.Author;
-import ru.cr.hw.models.Book;
+import ru.cr.hw.dto.AuthorDto;
 
 import java.util.List;
 
 public interface AuthorService {
 
-    List<Author> findAll();
+    List<AuthorDto> findAll();
 
-    Author insert(Author author);
-
-    Author update(String id, String fullName);
+    AuthorDto findById(String id);
 }

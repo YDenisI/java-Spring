@@ -4,45 +4,30 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Document(collection = "books")
 public class Book {
+
     @Id
     private String id;
 
     private String title;
 
-    @DBRef(lazy = true)
+    @DBRef(lazy = false)
     private Author author;
 
-    @DBRef(lazy = true)
+    @DBRef(lazy = false)
     private Genre genre;
 
-    private List<Comment> comments;
-/*
-    public Book(long id, String title, Author author, Genre genre) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.genre = genre;
-        this.comments = new ArrayList<>();
+    public Book() {
+
     }
-*/
 
     public Book(String title, Author author, Genre genre) {
         this.title = title;
         this.author = author;
         this.genre = genre;
-        this.comments = new ArrayList<>();
-    }
 
-    public Book(String title, Author author, Genre genre, List<Comment> comments) {
-        this.title = title;
-        this.author = author;
-        this.genre = genre;
-        this.comments = comments;
     }
 
     public String getId() {
@@ -75,13 +60,5 @@ public class Book {
 
     public void setGenre(Genre genre) {
         this.genre = genre;
-    }
-
-    public List<Comment> getComments() {
-        return comments;
-    }
-
-    public void setComments(List<Comment> comments) {
-        this.comments = comments;
     }
 }

@@ -2,7 +2,7 @@ package ru.cr.hw.converters;
 
 
 import org.springframework.stereotype.Component;
-import ru.cr.hw.models.Book;
+import ru.cr.hw.dto.BookDto;
 
 @Component
 public class BookConverter {
@@ -12,13 +12,14 @@ public class BookConverter {
 
     private final CommentConverter commentsConverter;
 
-    public BookConverter(AuthorConverter authorConverter, GenreConverter genreConverter, CommentConverter commentsConverter) {
+    public BookConverter(AuthorConverter authorConverter, GenreConverter genreConverter,
+                         CommentConverter commentsConverter) {
         this.authorConverter = authorConverter;
         this.genreConverter = genreConverter;
         this.commentsConverter = commentsConverter;
     }
 
-    public String bookToString(Book book) {
+    public String bookToString(BookDto book) {
 
         String commentsStr = book.getComments() != null && !book.getComments().isEmpty()
                 ? book.getComments().stream()
@@ -27,7 +28,7 @@ public class BookConverter {
                 .orElse("")
                 : "Нет комментариев";
 
-        return "Id: %d, title: %s, author: {%s}, genres: [%s], comments[%s]".formatted(
+        return "\nId: %s, title: %s, author: {%s}, genres: {%s}, comments[%s]".formatted(
                 book.getId(),
                 book.getTitle(),
                 authorConverter.authorToString(book.getAuthor()),

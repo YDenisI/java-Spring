@@ -1,11 +1,11 @@
 package ru.cr.hw.converters;
 
 import org.springframework.stereotype.Component;
-import ru.cr.hw.models.Genre;
+import ru.cr.hw.dto.GenreDto;
 
 @Component
 public class GenreConverter {
-    public String genreToString(Genre genre) {
-        return "Id: %d, Name: %s".formatted(genre.getId(), genre.getName());
+    public String genreToString(GenreDto genre) {
+        return "Id: %s, Name: %s".formatted(genre.getId(), genre.getName());
     }
 }

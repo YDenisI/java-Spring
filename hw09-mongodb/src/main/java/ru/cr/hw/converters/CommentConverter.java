@@ -1,16 +1,17 @@
 package ru.cr.hw.converters;
 
 import org.springframework.stereotype.Component;
-import ru.cr.hw.models.Comment;
+import ru.cr.hw.dto.CommentDto;
 
 @Component
 public class CommentConverter {
     public CommentConverter() {
     }
 
-    public String commentToString(Comment comment) {
-        return "Id: %d, Comment: %s".formatted(
+    public String commentToString(CommentDto comment) {
+        return "{Id: %s, Comment: %s, bookId: %s}".formatted(
                 comment.getId(),
-                comment.getComment());
+                comment.getComment(),
+                comment.getBookId());
     }
 }

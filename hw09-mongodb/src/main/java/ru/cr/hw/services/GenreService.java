@@ -1,14 +1,13 @@
 package ru.cr.hw.services;
 
-import ru.cr.hw.models.Author;
-import ru.cr.hw.models.Genre;
+import ru.cr.hw.dto.GenreDto;
 
 import java.util.List;
 
 public interface GenreService {
-    List<Genre> findAll();
 
-    Genre insert(Genre genre);
+    List<GenreDto> findAll();
 
-    Genre update(String id, String name);
+    GenreDto findById(String id);
+
 }

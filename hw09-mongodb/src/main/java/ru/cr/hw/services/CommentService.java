@@ -1,19 +1,22 @@
 package ru.cr.hw.services;
 
-import ru.cr.hw.models.Comment;
+import ru.cr.hw.dto.CommentCreateDto;
+import ru.cr.hw.dto.CommentDto;
+import ru.cr.hw.dto.CommentUpdateDto;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface CommentService {
 
-    Optional<Comment> findById(String id);
+    CommentDto findById(String id);
 
-    List<Comment> findByBookId(String bookId);
+    List<CommentDto> findByBookId(String bookId);
 
-    Comment insert(String comment, String bookId);
+    CommentDto insert(CommentCreateDto commentCreateDto);
 
-    Comment update(String id, String comment);
+    CommentDto update(CommentUpdateDto commentUpdateDto);
 
     void deleteById(String id);
+
+    List<CommentDto> findAll();
 }
