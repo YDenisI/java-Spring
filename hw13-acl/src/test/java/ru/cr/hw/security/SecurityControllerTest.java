@@ -58,7 +58,7 @@ public class SecurityControllerTest {
     @Test
     public void testAnonymousAccessToRoot() throws Exception {
         mockMvc.perform(get("/"))
-                .andExpect(status().isUnauthorized()); /
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
