@@ -1,0 +1,21 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/test
+      database: book
+autoconfigure:
+  exclude: org.springframework.shell.boot.ShellAutoConfiguration,org.springframework.shell.boot.StandardCommandsAutoConfiguration,org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration
+
+mongock:
+  #runner-type: "ApplicationRunner" # default
+  runner-type: "InitializingBean"
+  enabled: false
+  change-logs-scan-package: ru.cr.hw.mongock.changelog
+  mongo-db:
+    write-concern:
+      journal: false
+    read-concern: local
+
+logging:
+  level:
+    org.springframework.boot.autoconfigure: DEBUG
