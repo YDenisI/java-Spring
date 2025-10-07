@@ -15,10 +15,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 import ru.cr.hw.security.filter.MyOwnFilter;
 import ru.cr.hw.services.CustomUserDetailsService;
 
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.PUT;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.DELETE;
 
 @EnableWebSecurity
 @Configuration
@@ -31,63 +34,30 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
-            throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement((session) -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
-                .authorizeHttpRequests((authorize) -> authorize
-
-                        .requestMatchers("/").authenticated()
-
-                        .requestMatchers(HttpMethod.GET,"/author").authenticated()
-
-                        .requestMatchers(HttpMethod.GET,"/genre").authenticated()
-
-                        .requestMatchers(HttpMethod.GET,"/book/{bookId}/comments").authenticated()
-
-                        .requestMatchers(HttpMethod.GET, "/book/{id}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/book/{id}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/book/{id}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/book/{id}").hasRole("ADMIN")
-
-                        .requestMatchers("/book/add").hasRole("ADMIN")
-
-                        .requestMatchers(HttpMethod.GET,"/api/authors").authenticated()
-
-                        .requestMatchers(HttpMethod.GET,"/api/genres").authenticated()
-
-                        .requestMatchers(HttpMethod.GET, "/api/books").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/books/{id}").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/books").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/books/{id}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/books/{id}").hasRole("ADMIN")
-
-                        .requestMatchers(HttpMethod.GET,"/api/books/{bookId}/comments").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/books/{bookId}/comments").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST,"/api/comments/{commentId}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT,"/api/comments/{commentId}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE,"/api/comments/{commentId}").hasRole("ADMIN")
-
-                        .anyRequest().authenticated()
-                )
-                .exceptionHandling((exceptions) -> exceptions
-                        .defaultAuthenticationEntryPointFor(
-                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                                new RequestMatcher() {
-                                    @Override
-                                    public boolean matches(HttpServletRequest request) {
-                                        return request.getServletPath().startsWith("/api/");
-                                    }
-                                }
-                        )
-                )
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        String[] authenticatedPaths = {"/", "/author", "/genre", "/book/{bookId}/comments", "/api/authors",
+                "/api/genres", "/api/books", "/api/books/{id}", "/api/books/{bookId}/comments"};
+        String[] adminBookPaths = {"/book/{id}", "/book/add", "/api/books", "/api/books/{id}"};
+        String[] adminCommentPaths = {"/api/books/{bookId}/comments", "/api/comments/{commentId}"};
+        HttpMethod[] methods = {POST, PUT, DELETE};
+        return http.csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+                .authorizeHttpRequests(a -> {
+                    a.requestMatchers(GET, authenticatedPaths).authenticated();
+                    a.requestMatchers(GET, adminBookPaths).hasRole("ADMIN");
+                    for (HttpMethod m : methods) {
+                        a.requestMatchers(m, adminBookPaths).hasRole("ADMIN");
+                        a.requestMatchers(m, adminCommentPaths).hasRole("ADMIN");
+                    }
+                    a.anyRequest().authenticated();
+                })
+                .exceptionHandling(e -> e.defaultAuthenticationEntryPointFor(
+                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                        (HttpServletRequest req) -> req.getServletPath().startsWith("/api/")))
                 .addFilterAfter(new MyOwnFilter(), AuthorizationFilter.class)
                 .formLogin(Customizer.withDefaults())
                 .userDetailsService(userDetailsService)
-        ;
-        return http.build();
+                .build();
     }
 
     @Bean
