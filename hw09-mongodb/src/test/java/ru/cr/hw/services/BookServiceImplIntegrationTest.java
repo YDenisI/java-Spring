@@ -1,12 +1,15 @@
 package ru.cr.hw.services;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.cr.hw.dto.*;
 import ru.cr.hw.exceptions.EntityNotFoundException;
 import ru.cr.hw.models.Author;
@@ -25,10 +28,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataMongoTest
-@AutoConfigureDataMongo
-@TestPropertySource(locations = "classpath:application-test.yaml")
+@Testcontainers
+@TestPropertySource(properties = "mongock.enabled=false")
 @Import(BookServiceImpl.class)
 public class BookServiceImplIntegrationTest {
+
+    @Container
+    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:latest")
+            .withExposedPorts(27017);
+
+    @DynamicPropertySource
+    static void setProperties(org.springframework.test.context.DynamicPropertyRegistry registry) {
+        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+    }
 
     @Autowired
     private BookService bookService;
@@ -45,14 +57,11 @@ public class BookServiceImplIntegrationTest {
     @Autowired
     private CommentRepository commentRepository;
 
-
-
     private Author author1;
     private Genre genre1;
 
     @BeforeEach
     void setUp() {
-
         commentRepository.deleteAll();
         bookRepository.deleteAll();
         authorRepository.deleteAll();
@@ -66,12 +75,10 @@ public class BookServiceImplIntegrationTest {
 
     @Test
     void findById_shouldReturnBookWithComments_whenBookExists() {
-
         Book book = new Book("Title_1", author1, genre1);
         Book savedBook = bookRepository.save(book);
-        Comment comment = new Comment("Comment_1", savedBook.getId());
+        Comment comment = new Comment("Comment_1", savedBook);
         commentRepository.save(comment);
-
 
         AuthorDto expectedAuthorDto = AuthorDto.fromDomain(author1);
         GenreDto expectedGenreDto = GenreDto.fromDomain(genre1);
@@ -90,9 +97,9 @@ public class BookServiceImplIntegrationTest {
                         .ignoringFields("id", "comments")
                         .isEqualTo(expectedBook));
     }
+
     @Test
     void findById_shouldThrowEntityNotFoundException_whenBookNotFound() {
-        // When & Then
         assertThatThrownBy(() -> bookService.findById("non-existent-id"))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Book with id non-existent-id not found");
@@ -100,25 +107,16 @@ public class BookServiceImplIntegrationTest {
 
     @Test
     void findAll_shouldReturnAllBooksWithComments() {
-
         Book book1 = new Book("Title_1", author1, genre1);
         Book book2 = new Book("Title_2", author1, genre1);
         Book savedBook1 = bookRepository.save(book1);
         Book savedBook2 = bookRepository.save(book2);
-        Comment comment1 = new Comment("Comment_1", savedBook1.getId());
-        Comment comment2 = new Comment("Comment_2", savedBook2.getId());
+        Comment comment1 = new Comment("Comment_1", savedBook1);
+        Comment comment2 = new Comment("Comment_2", savedBook2);
         commentRepository.save(comment1);
         commentRepository.save(comment2);
 
         List<BookDto> result = bookService.findAll();
-
-        assertThat(result)
-                .hasSize(2)
-                .allSatisfy(bookDto ->
-                        assertThat(bookDto.getComments())
-                                .isNotNull()
-                                .hasSize(1)
-                );
 
         assertThat(result)
                 .extracting(BookDto::getTitle)
@@ -127,7 +125,6 @@ public class BookServiceImplIntegrationTest {
 
     @Test
     void insert_shouldCreateNewBook_whenValidData() {
-
         BookCreateDto dto = new BookCreateDto("New Title", author1.getId(), genre1.getId());
 
         AuthorDto expectedAuthorDto = AuthorDto.fromDomain(author1);
@@ -141,13 +138,12 @@ public class BookServiceImplIntegrationTest {
 
         assertThat(result)
                 .usingRecursiveComparison()
-                .ignoringFields("id", "comments")  // id генерируется, comments пустые
+                .ignoringFields("id", "comments")
                 .isEqualTo(expectedBook);
     }
 
     @Test
     void insert_shouldThrowIllegalArgumentException_whenAuthorNotFound() {
-
         BookCreateDto dto = new BookCreateDto("New Title", "invalid-author-id", genre1.getId());
 
         assertThatThrownBy(() -> bookService.insert(dto))
@@ -157,7 +153,6 @@ public class BookServiceImplIntegrationTest {
 
     @Test
     void insert_shouldThrowIllegalArgumentException_whenGenreNotFound() {
-
         BookCreateDto dto = new BookCreateDto("New Title", author1.getId(), "invalid-genre-id");
 
         assertThatThrownBy(() -> bookService.insert(dto))
@@ -167,7 +162,6 @@ public class BookServiceImplIntegrationTest {
 
     @Test
     void update_shouldUpdateBook_whenValidData() {
-
         Book book = new Book("Old Title", author1, genre1);
         Book savedBook = bookRepository.save(book);
         BookUpdateDto dto = new BookUpdateDto(savedBook.getId(), "Updated Title", author1.getId(), genre1.getId());
@@ -183,13 +177,12 @@ public class BookServiceImplIntegrationTest {
 
         assertThat(result)
                 .usingRecursiveComparison()
-                .ignoringFields("id", "comments")  // id не меняется, comments игнорируем
+                .ignoringFields("id", "comments")
                 .isEqualTo(expectedBook);
     }
 
     @Test
     void update_shouldThrowEntityNotFoundException_whenBookNotFound() {
-
         BookUpdateDto dto = new BookUpdateDto("non-existent-id", "Title", author1.getId(), genre1.getId());
 
         assertThatThrownBy(() -> bookService.update(dto))
@@ -199,7 +192,6 @@ public class BookServiceImplIntegrationTest {
 
     @Test
     void update_shouldThrowEntityNotFoundException_whenAuthorNotFound() {
-
         Book book = new Book("Title", author1, genre1);
         Book savedBook = bookRepository.save(book);
         BookUpdateDto dto = new BookUpdateDto(savedBook.getId(), "Title", "invalid-author-id", genre1.getId());
@@ -211,10 +203,9 @@ public class BookServiceImplIntegrationTest {
 
     @Test
     void deleteById_shouldDeleteBookAndComments_whenBookExists() {
-
         Book book = new Book("Title", author1, genre1);
         Book savedBook = bookRepository.save(book);
-        Comment comment = new Comment("Comment", savedBook.getId());
+        Comment comment = new Comment("Comment", savedBook);
         commentRepository.save(comment);
 
         bookService.deleteById(savedBook.getId());
@@ -225,7 +216,6 @@ public class BookServiceImplIntegrationTest {
 
     @Test
     void deleteById_shouldThrowEntityNotFoundException_whenBookNotFound() {
-
         assertThatThrownBy(() -> bookService.deleteById("non-existent-id"))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Book not found");

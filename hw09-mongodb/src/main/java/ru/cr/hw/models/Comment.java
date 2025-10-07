@@ -1,8 +1,11 @@
 package ru.cr.hw.models;
 
+import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+@Data
 @Document(collection = "comments")
 public class Comment {
     @Id
@@ -10,38 +13,15 @@ public class Comment {
 
     private String comment;
 
-    private String bookId;
+    @DBRef(lazy = false)
+    private Book book;
 
     public Comment() {
 
     }
 
-    public Comment(String comment, String bookId) {
+    public Comment(String comment, Book book) {
         this.comment = comment;
-        this.bookId = bookId;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public String getBookId() {
-        return bookId;
-    }
-
-    public void setBookId(String bookId) {
-        this.bookId = bookId;
+        this.book = book;
     }
 }

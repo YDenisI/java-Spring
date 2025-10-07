@@ -15,7 +15,6 @@ import ru.cr.hw.repositories.CommentRepository;
 import ru.cr.hw.repositories.GenreRepository;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -41,27 +40,19 @@ public class BookServiceImpl implements BookService {
     public BookDto findById(String id) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Book with id %s not found".formatted(id)));
-        List<Comment> comments = commentRepository.findByBookId(book.getId());
-        return BookDto.fromDomain(book, comments);
+
+        return BookDto.fromDomain(book);
     }
 
     @Override
     public List<BookDto> findAll() {
-
-        List<Book> books = bookRepository.findAll();
-
-        List<Comment> allComments = commentRepository.findAll();
-
-        Map<String, List<Comment>> commentsByBookId = allComments.stream()
-                .filter(comment -> comment.getBookId() != null)
-                .collect(Collectors.groupingBy(comment -> comment.getBookId()));
-
-        return books.stream()
-                .map(book -> {
-                    List<Comment> bookComments = commentsByBookId.getOrDefault(book.getId(), List.of());
-                    return BookDto.fromDomain(book, bookComments);
-                })
+        List<BookDto> books = bookRepository.findAll().stream()
+                .map(BookDto::fromDomain)
                 .collect(Collectors.toList());
+        if (books.isEmpty()) {
+            throw new EntityNotFoundException("Books not found");
+        }
+        return books;
     }
 
     @Override
@@ -72,7 +63,7 @@ public class BookServiceImpl implements BookService {
                 .orElseThrow(() -> new IllegalArgumentException("Genre not found"));
         Book book = new Book(bookCreateDto.getTitle(), author, genre);
         Book savedBook = bookRepository.save(book);
-        return BookDto.fromDomain(savedBook, null);
+        return BookDto.fromDomain(savedBook);
     }
 
     @Override
@@ -94,8 +85,7 @@ public class BookServiceImpl implements BookService {
 
         Book updated = bookRepository.save(book);
 
-        List<Comment> comments = commentRepository.findByBookId(updated.getId());
-        return BookDto.fromDomain(updated, comments);
+        return BookDto.fromDomain(updated);
     }
 
     @Override

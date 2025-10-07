@@ -1,8 +1,10 @@
 package ru.cr.hw.models;
 
+import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+@Data
 @Document(collection = "authors")
 public class Author {
 
@@ -15,28 +17,12 @@ public class Author {
 
     }
 
-    public Author(String id, String fullName) {
-        this.id = id;
-        this.fullName = fullName;
-    }
-
     public Author(String fullName) {
         this.fullName = fullName;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
+    public Author(String id, String fullName) {
         this.id = id;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
         this.fullName = fullName;
     }
 }

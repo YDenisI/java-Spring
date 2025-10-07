@@ -26,7 +26,7 @@ public class CommentDto {
         return new CommentDto(
                 comment.getId(),
                 comment.getComment(),
-                comment.getBookId()
+                comment.getBook().getId()
                 );
     }
 
@@ -36,7 +36,7 @@ public class CommentDto {
             c.setId(id);
         }
         c.setComment(comment);
-        c.setBookId(book.getId());
+        c.setBook(book);
         return c;
     }
 }
