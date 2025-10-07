@@ -24,6 +24,7 @@
         <module>hw11-auth</module>
         <module>hw12-auth</module>
         <module>hw13-acl</module>
+        <module>hw14-webflux</module>
     </modules>
 
     <properties>
