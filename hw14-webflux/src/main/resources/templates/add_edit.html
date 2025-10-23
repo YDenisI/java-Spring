@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Редактирование книги</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9f9f9;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            align-items: flex-start;
+        }
+
+        .container {
+            background: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            max-width: 380px;
+            width: 100%;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 18px;
+            font-weight: 600;
+            color: #222;
+            font-size: 1.4em;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: 600;
+            color: #444;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 7px 9px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        button#saveBtn {
+            margin-top: 20px;
+            width: 100%;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            font-weight: 600;
+            font-size: 1em;
+            padding: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button#saveBtn:hover {
+            background-color: #45a049;
+        }
+
+        #message {
+            margin-top: 12px;
+            padding: 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+            box-sizing: border-box;
+        }
+
+        #message.error {
+            background-color: #ffe6e6;
+            color: #cc0000;
+            border: 1px solid #cc0000;
+        }
+
+        #message.success {
+            background-color: #e6ffe6;
+            color: #2d7a2d;
+            border: 1px solid #2d7a2d;
+        }
+
+        .btn-back {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: transparent;
+            border: none;
+            font-size: 1em;
+            color: #4CAF50;
+            cursor: pointer;
+            font-weight: 600;
+            padding: 3px 6px;
+        }
+
+        .btn-back:hover {
+            color: #388e3c;
+            text-decoration: underline;
+        }
+        textarea {
+            width: 100%;
+            padding: 7px 9px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <button class="btn-back" th:text="#{back-text}" onclick="history.back()">← Назад</button>
+
+    <h1 th:text="${isEdit ? #messages.msg('edit-button-caption') : #messages.msg('add-book-button-caption')}">Редактировать книгу</h1>
+
+    <div id="message" class="error"></div>
+
+    <form id="editForm">
+        <input type="hidden" id="bookId" th:value="${bookId}" />
+
+        <label for="title" th:text="#{book-field-name}" >Название:</label>
+        <input type="text" id="title" name="title" required />
+
+        <label for="authorId" th:text="#{book-field-author}">Автор:</label>
+        <select id="authorId" name="authorId" required>
+            <option value="">Загрузка...</option>
+        </select>
+
+        <label for="genreId" th:text="#{book-field-genre}">Жанр:</label>
+        <select id="genreId" name="genreId" required>
+            <option value="">Загрузка...</option>
+        </select>
+
+        <div th:if="${!isEdit}">
+            <label for="initialComment" th:text="#{comment-field}">Комментарий (опционально):</label>
+            <textarea id="initialComment" name="initialComment" rows="4" placeholder="Введите комментарий (если нужно)"></textarea>
+        </div>
+
+        <button type="submit" onclick="saveBook()" id="saveBtn"th:text="#{save-button-caption}">Сохранить</button>
+    </form>
+</div>
+
+<script th:inline="javascript">
+
+    const SAVE_SUCCESS = [[#{save-book_success-text}]];
+    const ERROR_LOAD = [[#{error-load-text}]];
+    const ERROR_LOAD_AUTHOR =[[#{error-load-author-text}]];
+    const ERROR_LOAD_GENRE =[[#{error-load-genre-text}]];
+    const QUESTION =[[#{question}]];
+    const FAIL = [[#{failed-text}]];
+    const SELECT_GENRE = [[#{select-genre}]];
+    const SELECT_AUTHOR = [[#{select-author}]];
+    const TITLE_REQUIRED = [[#{message-need-title}]];
+
+    const $form = $('#editForm');
+    const $message = $('#message');
+    const bookId = $('#bookId').val();
+    const isEdit = bookId && bookId !== 'null';
+
+let authorsLoaded = false;
+let genresLoaded = false;
+
+function showMessage(text, isError = true) {
+    $message.text(text).removeClass(isError ? 'success' : 'error').addClass(isError ? 'error' : 'success').show();
+
+}
+
+$.get('/api/authors')
+    .done(function(authors) {
+        const $authorSelect = $('#authorId');
+        if (isEdit) {
+        $authorSelect.empty();
+        }else{
+                    $authorSelect.empty().append(`<option value="">${SELECT_AUTHOR}</option>`);
+        }
+        authors.forEach(author => {
+            $authorSelect.append(`<option value="${author.id}">${author.name}</option>`);
+        });
+        authorsLoaded = true;
+        setSelectedValuesIfReady();
+    })
+    .fail(() => showMessage(ERROR_LOAD_AUTHOR));
+
+$.get('/api/genres')
+    .done(function(genres) {
+        const $genreSelect = $('#genreId');
+         if (isEdit) {
+        $genreSelect.empty();
+        }else{
+            $genreSelect.empty().append(`<option value="">${SELECT_GENRE}</option>`);
+        }
+        genres.forEach(genre => {
+            $genreSelect.append(`<option value="${genre.id}">${genre.name}</option>`);
+        });
+        genresLoaded = true;
+        setSelectedValuesIfReady();
+    })
+    .fail(() => showMessage(ERROR_LOAD_GENRE));
+
+if (isEdit) {
+    $.get('/api/books/' + bookId)
+        .done(function(book) {
+            $('#title').val(book.title);
+            setSelectedValuesIfReady(book.author.id, book.genre.id);
+        })
+        .fail(() => showMessage(ERROR_LOAD));
+}
+
+function setSelectedValuesIfReady(authorId, genreId) {
+    if (authorsLoaded && genresLoaded) {
+        if (authorId) $('#authorId').val(authorId);
+        if (genreId) $('#genreId').val(genreId);
+    }
+}
+
+function saveBook() {
+event.preventDefault();
+
+const title = $('#title').val().trim();
+        const authorId = $('#authorId').val();
+        const genreId = $('#genreId').val();
+
+        if (!title) {
+            showMessage(TITLE_REQUIRED);
+            return;
+        }
+        if (!authorId) {
+            showMessage(SELECT_AUTHOR);
+            return;
+        }
+        if (!genreId) {
+            showMessage(SELECT_GENRE);
+            return;
+        }
+
+const formData = {
+    id: isEdit ? bookId : null,
+    title: document.getElementById('title').value,
+    authorId: document.getElementById('authorId').value,
+    genreId: document.getElementById('genreId').value,
+};
+
+ if (!isEdit) {
+        const initialCommentValue = $('#initialComment').val().trim();
+         if (initialCommentValue) {
+        formData.initialComment = initialCommentValue;
+    }
+    }
+
+const method = isEdit ? 'PUT' : 'POST';
+const url = isEdit ? '/api/books/' + bookId : '/api/books';
+
+fetch(url, {
+    method: method,
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(formData)
+})
+.then(response => {
+    if (!response.ok) {
+        return response.json().then(err => { throw new Error(err.message || 'Ошибка сервера.'); });
+    }
+    return response.json();
+})
+.then(() => {
+    showMessage(SAVE_SUCCESS, false);
+    setTimeout(() => window.location.href = '/', 1000);
+})
+.catch(error => {
+    showMessage(error.message);
+});
+}
+</script>
+</body>
+</html>
+
