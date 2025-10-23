@@ -7,7 +7,6 @@ import reactor.core.publisher.Mono;
 
 import ru.cr.hw.dto.GenreDto;
 import ru.cr.hw.repostory.GenreRepository;
-import ru.cr.hw.rest.exceptions.NotFoundException;
 
 
 @RequiredArgsConstructor

@@ -55,10 +55,12 @@ public class BookServiceImpl implements BookService {
     @Override
     public Mono<BookDto> create(BookCreateDto bookCreateDto) {
         Mono<Author> authorMono = authorRepository.findById(bookCreateDto.getAuthorId())
-                .switchIfEmpty(Mono.error(new NotFoundException("Author with id " + bookCreateDto.getAuthorId() + " not found")));
+                .switchIfEmpty(Mono.error(new NotFoundException("Author with id " +
+                        bookCreateDto.getAuthorId() + " not found")));
 
         Mono<Genre> genreMono = genreRepository.findById(bookCreateDto.getGenreId())
-                .switchIfEmpty(Mono.error(new NotFoundException("Genre with id " + bookCreateDto.getGenreId() + " not found")));
+                .switchIfEmpty(Mono.error(new NotFoundException("Genre with id " +
+                        bookCreateDto.getGenreId() + " not found")));
 
         return Mono.zip(authorMono, genreMono)
                 .flatMap(tuple -> {
@@ -77,13 +79,16 @@ public class BookServiceImpl implements BookService {
     @Override
     public Mono<BookDto> update(BookUpdateDto bookUpdateDto) {
         Mono<Author> authorMono = authorRepository.findById(bookUpdateDto.getAuthorId())
-                .switchIfEmpty(Mono.error(new NotFoundException("Author with id " + bookUpdateDto.getAuthorId() + " not found")));
+                .switchIfEmpty(Mono.error(new NotFoundException("Author with id " +
+                        bookUpdateDto.getAuthorId() + " not found")));
 
         Mono<Genre> genreMono = genreRepository.findById(bookUpdateDto.getGenreId())
-                .switchIfEmpty(Mono.error(new NotFoundException("Genre with id " + bookUpdateDto.getGenreId() + " not found")));
+                .switchIfEmpty(Mono.error(new NotFoundException("Genre with id " +
+                        bookUpdateDto.getGenreId() + " not found")));
 
         Mono<Book> bookMono = bookRepository.findById(bookUpdateDto.getId())
-                .switchIfEmpty(Mono.error(new NotFoundException("Book with id " + bookUpdateDto.getId() + " not found")));
+                .switchIfEmpty(Mono.error(new NotFoundException("Book with id " +
+                        bookUpdateDto.getId() + " not found")));
 
         return Mono.zip(authorMono, genreMono, bookMono)
                 .flatMap(tuple -> {

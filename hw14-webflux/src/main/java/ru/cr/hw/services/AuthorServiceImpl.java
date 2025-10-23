@@ -7,7 +7,6 @@ import reactor.core.publisher.Mono;
 
 import ru.cr.hw.dto.AuthorDto;
 import ru.cr.hw.repostory.AuthorRepository;
-import ru.cr.hw.rest.exceptions.NotFoundException;
 
 
 @RequiredArgsConstructor
