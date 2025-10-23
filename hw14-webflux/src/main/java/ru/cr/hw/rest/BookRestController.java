@@ -42,7 +42,7 @@ public class BookRestController {
 
     @PostMapping
     public Mono<ResponseEntity<BookDto>> createBook(@RequestBody @Valid BookCreateDto createDto) {
-        return bookService.insert(createDto)
+        return bookService.create(createDto)
                 .map(savedBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedBook));
     }
 

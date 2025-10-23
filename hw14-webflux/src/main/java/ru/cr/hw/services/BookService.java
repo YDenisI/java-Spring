@@ -12,7 +12,7 @@ public interface BookService {
 
     Flux<BookDto> findAll();
 
-    Mono<BookDto> insert(BookCreateDto bookCreateDto);
+    Mono<BookDto> create(BookCreateDto bookCreateDto);
 
     Mono<BookDto> update(BookUpdateDto bookUpdateDto);
 

@@ -18,14 +18,12 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public Flux<AuthorDto> findAll() {
         return authorRepository.findAll()
-                .map(AuthorDto::fromDomain)
-                .switchIfEmpty(Flux.error(new NotFoundException("Authors not found!")));
+                .map(AuthorDto::fromDomain);
     }
 
     @Override
     public Mono<AuthorDto> findById(String id) {
         return authorRepository.findById(id)
-                .map(AuthorDto::fromDomain)
-                .switchIfEmpty(Mono.error(new NotFoundException("Author not found!")));
+                .map(AuthorDto::fromDomain);
     }
 }

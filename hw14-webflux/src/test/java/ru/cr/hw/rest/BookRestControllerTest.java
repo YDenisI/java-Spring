@@ -82,7 +82,7 @@ class BookRestControllerTest {
     @Test
     void createBook_shouldCreateAndReturnBook() {
 
-        when(bookService.insert(any(BookCreateDto.class))).thenReturn(Mono.just(book1));
+        when(bookService.create(any(BookCreateDto.class))).thenReturn(Mono.just(book1));
 
         webTestClient.post()
                 .uri("/api/books")

@@ -13,7 +13,7 @@ public interface CommentService {
 
     Flux<CommentDto> findByBookId(String bookId);
 
-    Mono<CommentDto> insert(CommentCreateDto commentCreateDto);
+    Mono<CommentDto> create(CommentCreateDto commentCreateDto);
 
     Mono<CommentDto> update(CommentUpdateDto commentUpdateDto);
 

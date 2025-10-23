@@ -27,27 +27,24 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Mono<CommentDto> findById(String id) {
             return commentRepository.findById(id)
-                    .map(CommentDto::fromDomain)
-                    .switchIfEmpty(Mono.error(new NotFoundException("Comment not found!")));
+                    .map(CommentDto::fromDomain);
     }
 
     @Override
     public Flux<CommentDto>  findByBookId(String bookId) {
         return commentRepository.findByBookId(bookId)
-                .map(CommentDto::fromDomain)
-                .switchIfEmpty(Flux.error(new NotFoundException("Comment not found!")));
+                .map(CommentDto::fromDomain);
     }
 
 
     @Override
     public Flux<CommentDto> findAll() {
         return commentRepository.findAll()
-                .map(CommentDto::fromDomain)
-                .switchIfEmpty(Flux.error(new NotFoundException("Comment not found!")));
+                .map(CommentDto::fromDomain);
     }
 
     @Override
-    public Mono<CommentDto> insert(CommentCreateDto commentCreateDto) {
+    public Mono<CommentDto> create(CommentCreateDto commentCreateDto) {
         String bookId = commentCreateDto.getBookId();
         String comment = commentCreateDto.getComment();
 

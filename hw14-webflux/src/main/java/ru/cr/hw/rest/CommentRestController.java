@@ -44,7 +44,7 @@ public class CommentRestController {
         if (!bookId.equals(newCommentDto.getBookId())) {
             throw new IllegalArgumentException("Path variable bookId and newCommentDto id must match");
         }
-        return commentService.insert(newCommentDto)
+        return commentService.create(newCommentDto)
                 .map(savedComment -> ResponseEntity.status(HttpStatus.CREATED).body(savedComment));
     }
 

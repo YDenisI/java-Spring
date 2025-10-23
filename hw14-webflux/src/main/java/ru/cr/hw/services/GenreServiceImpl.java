@@ -18,14 +18,12 @@ public class GenreServiceImpl implements GenreService {
     @Override
     public Flux<GenreDto> findAll() {
         return genreRepository.findAll()
-                .map(GenreDto::fromDomain)
-                .switchIfEmpty(Flux.error(new NotFoundException("Authors not found!")));
+                .map(GenreDto::fromDomain);
     }
 
     @Override
     public Mono<GenreDto> findById(String id) {
         return genreRepository.findById(id)
-                .map(GenreDto::fromDomain)
-                .switchIfEmpty(Mono.error(new NotFoundException("Author not found!")));
+                .map(GenreDto::fromDomain);
     }
 }

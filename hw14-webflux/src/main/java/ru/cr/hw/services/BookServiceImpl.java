@@ -5,9 +5,11 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import ru.cr.hw.domain.Author;
 import ru.cr.hw.domain.Book;
 import ru.cr.hw.domain.Comment;
 
+import ru.cr.hw.domain.Genre;
 import ru.cr.hw.dto.BookCreateDto;
 import ru.cr.hw.dto.BookDto;
 import ru.cr.hw.dto.BookUpdateDto;
@@ -40,64 +42,59 @@ public class BookServiceImpl implements BookService {
     @Override
     public Mono<BookDto> findById(String id) {
         return bookRepository.findById(id)
-                .switchIfEmpty(Mono.error(new NotFoundException("Book with id " + id + " not found")))
                 .map(BookDto::fromDomain);
     }
 
     @Override
     public Flux<BookDto> findAll() {
          return bookRepository.findAll()
-                .map(BookDto::fromDomain)
-                .switchIfEmpty(Flux.error(new NotFoundException("Books not found!")));
+                .map(BookDto::fromDomain);
 
     }
 
     @Override
-    public Mono<BookDto> insert(BookCreateDto bookCreateDto) {
-        return authorRepository.findById(bookCreateDto.getAuthorId())
-                .switchIfEmpty(Mono.error(new NotFoundException("Author with id "
-                        + bookCreateDto.getAuthorId()
-                        + " not found")))
-                .flatMap(author ->
-                        genreRepository.findById(bookCreateDto.getGenreId())
-                                .switchIfEmpty(Mono.error(new NotFoundException("Genre with id "
-                                        + bookCreateDto.getGenreId()
-                                        + " not found")))
-                                .flatMap(genre -> {
-                                    Book book = new Book(bookCreateDto.getTitle(), author, genre);
-                                    return bookRepository.save(book)
-                                    .flatMap(savedBook -> {
-                                        Comment comment = new Comment(bookCreateDto.getInitialComment(), savedBook);
-                                        return commentRepository.save(comment).thenReturn(savedBook);
-                                    });
-                                })
-                )
+    public Mono<BookDto> create(BookCreateDto bookCreateDto) {
+        Mono<Author> authorMono = authorRepository.findById(bookCreateDto.getAuthorId())
+                .switchIfEmpty(Mono.error(new NotFoundException("Author with id " + bookCreateDto.getAuthorId() + " not found")));
+
+        Mono<Genre> genreMono = genreRepository.findById(bookCreateDto.getGenreId())
+                .switchIfEmpty(Mono.error(new NotFoundException("Genre with id " + bookCreateDto.getGenreId() + " not found")));
+
+        return Mono.zip(authorMono, genreMono)
+                .flatMap(tuple -> {
+                    Author author = tuple.getT1();
+                    Genre genre = tuple.getT2();
+                    Book book = new Book(bookCreateDto.getTitle(), author, genre);
+                    return bookRepository.save(book)
+                            .flatMap(savedBook -> {
+                                Comment comment = new Comment(bookCreateDto.getInitialComment(), savedBook);
+                                return commentRepository.save(comment).thenReturn(savedBook);
+                            });
+                })
                 .map(BookDto::fromDomain);
     }
 
     @Override
     public Mono<BookDto> update(BookUpdateDto bookUpdateDto) {
-        return authorRepository.findById(bookUpdateDto.getAuthorId())
-                .switchIfEmpty(Mono.error(new NotFoundException("Author with id " + bookUpdateDto.getAuthorId()
-                        + " not found")))
-                .flatMap(author ->
-                        genreRepository.findById(bookUpdateDto.getGenreId())
-                                .switchIfEmpty(Mono.error(new NotFoundException("Genre with id "
-                                        + bookUpdateDto.getGenreId()
-                                        + " not found")))
-                                .flatMap(genre ->
-                                        bookRepository.findById(bookUpdateDto.getId())
-                                                .switchIfEmpty(Mono.error(new NotFoundException("Book with id "
-                                                        + bookUpdateDto.getId()
-                                                        + " not found")))
-                                                .flatMap(book -> {
-                                                    book.setTitle(bookUpdateDto.getTitle());
-                                                    book.setAuthor(author);
-                                                    book.setGenre(genre);
-                                                    return bookRepository.save(book);
-                                                })
-                                )
-                )
+        Mono<Author> authorMono = authorRepository.findById(bookUpdateDto.getAuthorId())
+                .switchIfEmpty(Mono.error(new NotFoundException("Author with id " + bookUpdateDto.getAuthorId() + " not found")));
+
+        Mono<Genre> genreMono = genreRepository.findById(bookUpdateDto.getGenreId())
+                .switchIfEmpty(Mono.error(new NotFoundException("Genre with id " + bookUpdateDto.getGenreId() + " not found")));
+
+        Mono<Book> bookMono = bookRepository.findById(bookUpdateDto.getId())
+                .switchIfEmpty(Mono.error(new NotFoundException("Book with id " + bookUpdateDto.getId() + " not found")));
+
+        return Mono.zip(authorMono, genreMono, bookMono)
+                .flatMap(tuple -> {
+                    Author author = tuple.getT1();
+                    Genre genre = tuple.getT2();
+                    Book book = tuple.getT3();
+                    book.setTitle(bookUpdateDto.getTitle());
+                    book.setAuthor(author);
+                    book.setGenre(genre);
+                    return bookRepository.save(book);
+                })
                 .map(BookDto::fromDomain);
     }
 
