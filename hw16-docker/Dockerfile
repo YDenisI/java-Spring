@@ -1,5 +1,5 @@
 
-FROM maven:3.8.5-openjdk-17 AS build
+FROM maven:3.8.5-eclipse-temurin-17 AS build
 
 WORKDIR /myAppBooks
 
@@ -11,7 +11,7 @@ COPY src ./src
 
 RUN mvn clean package -DskipTests
 
-FROM openjdk:17-jdk-alpine
+FROM eclipse-temurin:17-alpine AS runtime
 
 RUN addgroup -S spring && adduser -S spring -G spring
 
